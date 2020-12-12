@@ -7,3 +7,10 @@ run:
 
 start:
 	./build/tasker
+
+test:
+	go test -v -cover -coverprofile=coverage.html -timeout 30s ./...
+
+.PHONY: coverage
+coverage:
+	go tool cover -html=coverage.html
