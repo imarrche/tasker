@@ -31,8 +31,10 @@ func TestTaskRepository_Create(t *testing.T) {
 	t2FromRepo, err2 := r.Create(t2)
 
 	assert.NoError(t, err1)
+	assert.Equal(t, 1, t1FromRepo.ID)
 	assert.Equal(t, t1.Name, t1FromRepo.Name)
 	assert.NoError(t, err2)
+	assert.Equal(t, 2, t2FromRepo.ID)
 	assert.Equal(t, t2.Name, t2FromRepo.Name)
 }
 

@@ -31,22 +31,24 @@ func TestProjectRepository_Create(t *testing.T) {
 	p2FromRepo, err2 := r.Create(p2)
 
 	assert.NoError(t, err1)
+	assert.Equal(t, 1, p1FromRepo.ID)
 	assert.Equal(t, p1.Name, p1FromRepo.Name)
 	assert.NoError(t, err2)
+	assert.Equal(t, 2, p2FromRepo.ID)
 	assert.Equal(t, p2.Name, p2FromRepo.Name)
 }
 
 func TestProjectRepository_GetByID(t *testing.T) {
 	r := NewProjectRepository()
-	p := model.Project{ID: 1, Name: "Project 1"}
-	r.store.projects[p.ID] = p
+	p1 := model.Project{ID: 1, Name: "Project 1"}
+	r.store.projects[p1.ID] = p1
 
-	p1FromRepo, err1 := r.GetByID(p.ID)
+	p1FromRepo, err1 := r.GetByID(p1.ID)
 	_, err2 := r.GetByID(2)
 
 	assert.NoError(t, err1)
-	assert.Equal(t, p.ID, p1FromRepo.ID)
-	assert.Equal(t, p.Name, p1FromRepo.Name)
+	assert.Equal(t, p1.ID, p1FromRepo.ID)
+	assert.Equal(t, p1.Name, p1FromRepo.Name)
 	assert.Equal(t, store.ErrNotFound, err2)
 }
 

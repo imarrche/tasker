@@ -31,8 +31,10 @@ func TestCommentRepository_Create(t *testing.T) {
 	c2FromRepo, err2 := r.Create(c2)
 
 	assert.NoError(t, err1)
+	assert.Equal(t, 1, c1FromRepo.ID)
 	assert.Equal(t, c1.Text, c1FromRepo.Text)
 	assert.NoError(t, err2)
+	assert.Equal(t, 2, c2FromRepo.ID)
 	assert.Equal(t, c2.Text, c2FromRepo.Text)
 }
 

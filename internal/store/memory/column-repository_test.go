@@ -31,22 +31,24 @@ func TestColumnRepository_Create(t *testing.T) {
 	c2FromRepo, err2 := r.Create(c2)
 
 	assert.NoError(t, err1)
+	assert.Equal(t, 1, c1FromRepo.ID)
 	assert.Equal(t, c1.Name, c1FromRepo.Name)
 	assert.NoError(t, err2)
+	assert.Equal(t, 2, c2FromRepo.ID)
 	assert.Equal(t, c2.Name, c2FromRepo.Name)
 }
 
 func TestColumnRepository_GetByID(t *testing.T) {
 	r := NewColumnRepository()
-	c := model.Column{ID: 1, Name: "Column 1"}
-	r.store.columns[c.ID] = c
+	c1 := model.Column{ID: 1, Name: "Column 1"}
+	r.store.columns[c1.ID] = c1
 
-	c1FromRepo, err1 := r.GetByID(c.ID)
+	c1FromRepo, err1 := r.GetByID(c1.ID)
 	_, err2 := r.GetByID(2)
 
 	assert.NoError(t, err1)
-	assert.Equal(t, c.ID, c1FromRepo.ID)
-	assert.Equal(t, c.Name, c1FromRepo.Name)
+	assert.Equal(t, c1.ID, c1FromRepo.ID)
+	assert.Equal(t, c1.Name, c1FromRepo.Name)
 	assert.Equal(t, store.ErrNotFound, err2)
 }
 
