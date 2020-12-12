@@ -2,6 +2,8 @@ package store
 
 import "github.com/imarrche/tasker/internal/model"
 
+//go:generate mockgen -source=interface.go -destination=mocks/mock.go
+
 // Store is an interface all stores must implement.
 type Store interface {
 	Open() error
@@ -24,7 +26,7 @@ type ProjectRepository interface {
 // ColumnRepository is an interface all column repositories must implement.
 type ColumnRepository interface {
 	GetAll() ([]model.Column, error)
-	Create(model.Project) (model.Column, error)
+	Create(model.Column) (model.Column, error)
 	GetByID(int) (model.Column, error)
 	Update(model.Column) error
 	Delete(model.Column) error
