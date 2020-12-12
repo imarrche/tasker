@@ -9,13 +9,13 @@ import (
 
 // CommentRepository is an in memory comment repository.
 type CommentRepository struct {
-	store *Store
-	m     sync.RWMutex
+	db *inMemoryDb
+	m  sync.RWMutex
 }
 
 // NewCommentRepository creates and returns a new CommentRepository instance.
-func NewCommentRepository() *CommentRepository {
-	return &CommentRepository{store: NewStore()}
+func NewCommentRepository(db *inMemoryDb) *CommentRepository {
+	return &CommentRepository{db: db}
 }
 
 // GetAll returns all comments.
@@ -24,7 +24,7 @@ func (r *CommentRepository) GetAll() ([]model.Comment, error) {
 	defer r.m.RUnlock()
 
 	comments := []model.Comment{}
-	for _, c := range r.store.comments {
+	for _, c := range r.db.comments {
 		comments = append(comments, c)
 	}
 
@@ -36,8 +36,8 @@ func (r *CommentRepository) Create(c model.Comment) (model.Comment, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	c.ID = len(r.store.comments) + 1
-	r.store.comments[c.ID] = c
+	c.ID = len(r.db.comments) + 1
+	r.db.comments[c.ID] = c
 
 	return c, nil
 }
@@ -47,7 +47,7 @@ func (r *CommentRepository) GetByID(id int) (model.Comment, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
 
-	if c, ok := r.store.comments[id]; ok {
+	if c, ok := r.db.comments[id]; ok {
 		return c, nil
 	}
 
@@ -59,8 +59,8 @@ func (r *CommentRepository) Update(c model.Comment) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if _, ok := r.store.comments[c.ID]; ok {
-		r.store.comments[c.ID] = c
+	if _, ok := r.db.comments[c.ID]; ok {
+		r.db.comments[c.ID] = c
 		return nil
 	}
 
@@ -72,8 +72,8 @@ func (r *CommentRepository) Delete(c model.Comment) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if _, ok := r.store.comments[c.ID]; ok {
-		delete(r.store.comments, c.ID)
+	if _, ok := r.db.comments[c.ID]; ok {
+		delete(r.db.comments, c.ID)
 		return nil
 	}
 

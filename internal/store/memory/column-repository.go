@@ -9,13 +9,13 @@ import (
 
 // ColumnRepository is an in memory column repository.
 type ColumnRepository struct {
-	store *Store
-	m     sync.RWMutex
+	db *inMemoryDb
+	m  sync.RWMutex
 }
 
 // NewColumnRepository creates and returns a new ColumnRepository instance.
-func NewColumnRepository() *ColumnRepository {
-	return &ColumnRepository{store: NewStore()}
+func NewColumnRepository(db *inMemoryDb) *ColumnRepository {
+	return &ColumnRepository{db: db}
 }
 
 // GetAll returns all columns.
@@ -24,7 +24,7 @@ func (r *ColumnRepository) GetAll() ([]model.Column, error) {
 	defer r.m.RUnlock()
 
 	columns := []model.Column{}
-	for _, c := range r.store.columns {
+	for _, c := range r.db.columns {
 		columns = append(columns, c)
 	}
 
@@ -36,8 +36,8 @@ func (r *ColumnRepository) Create(c model.Column) (model.Column, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	c.ID = len(r.store.columns) + 1
-	r.store.columns[c.ID] = c
+	c.ID = len(r.db.columns) + 1
+	r.db.columns[c.ID] = c
 
 	return c, nil
 }
@@ -47,7 +47,7 @@ func (r *ColumnRepository) GetByID(id int) (model.Column, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
 
-	if c, ok := r.store.columns[id]; ok {
+	if c, ok := r.db.columns[id]; ok {
 		return c, nil
 	}
 
@@ -59,8 +59,8 @@ func (r *ColumnRepository) Update(c model.Column) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if _, ok := r.store.columns[c.ID]; ok {
-		r.store.columns[c.ID] = c
+	if _, ok := r.db.columns[c.ID]; ok {
+		r.db.columns[c.ID] = c
 		return nil
 	}
 
@@ -72,8 +72,8 @@ func (r *ColumnRepository) Delete(c model.Column) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if _, ok := r.store.columns[c.ID]; ok {
-		delete(r.store.columns, c.ID)
+	if _, ok := r.db.columns[c.ID]; ok {
+		delete(r.db.columns, c.ID)
 		return nil
 	}
 

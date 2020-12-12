@@ -9,13 +9,13 @@ import (
 
 // ProjectRepository is an in memory project repository.
 type ProjectRepository struct {
-	store *Store
-	m     sync.RWMutex
+	db *inMemoryDb
+	m  sync.RWMutex
 }
 
 // NewProjectRepository creates and returns a new ProjectRepository instance.
-func NewProjectRepository() *ProjectRepository {
-	return &ProjectRepository{store: NewStore()}
+func NewProjectRepository(db *inMemoryDb) *ProjectRepository {
+	return &ProjectRepository{db: db}
 }
 
 // GetAll returns all projects.
@@ -24,7 +24,7 @@ func (r *ProjectRepository) GetAll() ([]model.Project, error) {
 	defer r.m.RUnlock()
 
 	projects := []model.Project{}
-	for _, p := range r.store.projects {
+	for _, p := range r.db.projects {
 		projects = append(projects, p)
 	}
 
@@ -36,8 +36,8 @@ func (r *ProjectRepository) Create(p model.Project) (model.Project, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	p.ID = len(r.store.projects) + 1
-	r.store.projects[p.ID] = p
+	p.ID = len(r.db.projects) + 1
+	r.db.projects[p.ID] = p
 
 	return p, nil
 }
@@ -47,7 +47,7 @@ func (r *ProjectRepository) GetByID(id int) (model.Project, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
 
-	if p, ok := r.store.projects[id]; ok {
+	if p, ok := r.db.projects[id]; ok {
 		return p, nil
 	}
 
@@ -59,8 +59,8 @@ func (r *ProjectRepository) Update(p model.Project) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if _, ok := r.store.projects[p.ID]; ok {
-		r.store.projects[p.ID] = p
+	if _, ok := r.db.projects[p.ID]; ok {
+		r.db.projects[p.ID] = p
 		return nil
 	}
 
@@ -72,8 +72,8 @@ func (r *ProjectRepository) Delete(p model.Project) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if _, ok := r.store.projects[p.ID]; ok {
-		delete(r.store.projects, p.ID)
+	if _, ok := r.db.projects[p.ID]; ok {
+		delete(r.db.projects, p.ID)
 		return nil
 	}
 

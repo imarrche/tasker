@@ -9,13 +9,13 @@ import (
 
 // TaskRepository is an in memory task repository.
 type TaskRepository struct {
-	store *Store
-	m     sync.RWMutex
+	db *inMemoryDb
+	m  sync.RWMutex
 }
 
 // NewTaskRepository creates and returns a new TaskRepository instance.
-func NewTaskRepository() *TaskRepository {
-	return &TaskRepository{store: NewStore()}
+func NewTaskRepository(db *inMemoryDb) *TaskRepository {
+	return &TaskRepository{db: db}
 }
 
 // GetAll returns all Tasks.
@@ -24,7 +24,7 @@ func (r *TaskRepository) GetAll() ([]model.Task, error) {
 	defer r.m.RUnlock()
 
 	tasks := []model.Task{}
-	for _, t := range r.store.tasks {
+	for _, t := range r.db.tasks {
 		tasks = append(tasks, t)
 	}
 
@@ -36,8 +36,8 @@ func (r *TaskRepository) Create(t model.Task) (model.Task, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	t.ID = len(r.store.tasks) + 1
-	r.store.tasks[t.ID] = t
+	t.ID = len(r.db.tasks) + 1
+	r.db.tasks[t.ID] = t
 
 	return t, nil
 }
@@ -47,7 +47,7 @@ func (r *TaskRepository) GetByID(id int) (model.Task, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
 
-	if t, ok := r.store.tasks[id]; ok {
+	if t, ok := r.db.tasks[id]; ok {
 		return t, nil
 	}
 
@@ -59,8 +59,8 @@ func (r *TaskRepository) Update(t model.Task) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if _, ok := r.store.tasks[t.ID]; ok {
-		r.store.tasks[t.ID] = t
+	if _, ok := r.db.tasks[t.ID]; ok {
+		r.db.tasks[t.ID] = t
 		return nil
 	}
 
@@ -72,8 +72,8 @@ func (r *TaskRepository) Delete(t model.Task) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if _, ok := r.store.tasks[t.ID]; ok {
-		delete(r.store.tasks, t.ID)
+	if _, ok := r.db.tasks[t.ID]; ok {
+		delete(r.db.tasks, t.ID)
 		return nil
 	}
 
