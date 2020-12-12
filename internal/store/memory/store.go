@@ -7,6 +7,7 @@ type Store struct {
 	projects map[int]model.Project
 	columns  map[int]model.Column
 	tasks    map[int]model.Task
+	comments map[int]model.Comment
 }
 
 // NewStore creates and returns a new Store instance.
@@ -15,5 +16,6 @@ func NewStore() *Store {
 		projects: map[int]model.Project{},
 		columns:  map[int]model.Column{},
 		tasks:    map[int]model.Task{},
+		comments: map[int]model.Comment{},
 	}
 }
