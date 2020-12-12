@@ -2,6 +2,16 @@ package store
 
 import "github.com/imarrche/tasker/internal/model"
 
+// Store is an interface all stores must implement.
+type Store interface {
+	Open() error
+	Projects() ProjectRepository
+	Columns() ColumnRepository
+	Tasks() TaskRepository
+	Comments() CommentRepository
+	Close() error
+}
+
 // ProjectRepository is an interface all project repositories must implement.
 type ProjectRepository interface {
 	GetAll() ([]model.Project, error)
