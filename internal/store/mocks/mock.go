@@ -200,18 +200,18 @@ func (mr *MockProjectRepositoryMockRecorder) Update(arg0 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockProjectRepository)(nil).Update), arg0)
 }
 
-// Delete mocks base method
-func (m *MockProjectRepository) Delete(arg0 model.Project) error {
+// DeleteByID mocks base method
+func (m *MockProjectRepository) DeleteByID(arg0 int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", arg0)
+	ret := m.ctrl.Call(m, "DeleteByID", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete
-func (mr *MockProjectRepositoryMockRecorder) Delete(arg0 interface{}) *gomock.Call {
+// DeleteByID indicates an expected call of DeleteByID
+func (mr *MockProjectRepositoryMockRecorder) DeleteByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockProjectRepository)(nil).Delete), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockProjectRepository)(nil).DeleteByID), arg0)
 }
 
 // MockColumnRepository is a mock of ColumnRepository interface
@@ -296,18 +296,18 @@ func (mr *MockColumnRepositoryMockRecorder) Update(arg0 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockColumnRepository)(nil).Update), arg0)
 }
 
-// Delete mocks base method
-func (m *MockColumnRepository) Delete(arg0 model.Column) error {
+// DeleteByID mocks base method
+func (m *MockColumnRepository) DeleteByID(arg0 int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", arg0)
+	ret := m.ctrl.Call(m, "DeleteByID", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete
-func (mr *MockColumnRepositoryMockRecorder) Delete(arg0 interface{}) *gomock.Call {
+// DeleteByID indicates an expected call of DeleteByID
+func (mr *MockColumnRepositoryMockRecorder) DeleteByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockColumnRepository)(nil).Delete), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockColumnRepository)(nil).DeleteByID), arg0)
 }
 
 // MockTaskRepository is a mock of TaskRepository interface
@@ -392,18 +392,18 @@ func (mr *MockTaskRepositoryMockRecorder) Update(arg0 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockTaskRepository)(nil).Update), arg0)
 }
 
-// Delete mocks base method
-func (m *MockTaskRepository) Delete(arg0 model.Task) error {
+// DeleteByID mocks base method
+func (m *MockTaskRepository) DeleteByID(arg0 int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", arg0)
+	ret := m.ctrl.Call(m, "DeleteByID", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete
-func (mr *MockTaskRepositoryMockRecorder) Delete(arg0 interface{}) *gomock.Call {
+// DeleteByID indicates an expected call of DeleteByID
+func (mr *MockTaskRepositoryMockRecorder) DeleteByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockTaskRepository)(nil).Delete), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockTaskRepository)(nil).DeleteByID), arg0)
 }
 
 // MockCommentRepository is a mock of CommentRepository interface
@@ -488,16 +488,16 @@ func (mr *MockCommentRepositoryMockRecorder) Update(arg0 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockCommentRepository)(nil).Update), arg0)
 }
 
-// Delete mocks base method
-func (m *MockCommentRepository) Delete(arg0 model.Comment) error {
+// DeleteByID mocks base method
+func (m *MockCommentRepository) DeleteByID(arg0 int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", arg0)
+	ret := m.ctrl.Call(m, "DeleteByID", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Delete indicates an expected call of Delete
-func (mr *MockCommentRepositoryMockRecorder) Delete(arg0 interface{}) *gomock.Call {
+// DeleteByID indicates an expected call of DeleteByID
+func (mr *MockCommentRepositoryMockRecorder) DeleteByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockCommentRepository)(nil).Delete), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockCommentRepository)(nil).DeleteByID), arg0)
 }

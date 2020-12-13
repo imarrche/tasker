@@ -13,6 +13,6 @@ type ProjectService interface {
 	Create(model.Project) (model.Project, error)
 	GetByID(int) (model.Project, error)
 	Update(model.Project) error
-	Delete(model.Project) error
+	DeleteByID(int) error
 	Validate(model.Project) error
 }

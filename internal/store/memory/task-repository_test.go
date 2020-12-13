@@ -73,8 +73,8 @@ func TestTaskRepository_Delete(t *testing.T) {
 	t2 := model.Task{ID: 2, Name: "Task 2"}
 	s.db.tasks[t1.ID] = t1
 
-	err1 := s.Tasks().Delete(t1)
-	err2 := s.Tasks().Delete(t2)
+	err1 := s.Tasks().DeleteByID(t1.ID)
+	err2 := s.Tasks().DeleteByID(t2.ID)
 
 	assert.NoError(t, err1)
 	assert.Equal(t, 0, len(s.db.tasks))

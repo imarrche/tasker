@@ -20,7 +20,7 @@ type ProjectRepository interface {
 	Create(model.Project) (model.Project, error)
 	GetByID(int) (model.Project, error)
 	Update(model.Project) error
-	Delete(model.Project) error
+	DeleteByID(int) error
 }
 
 // ColumnRepository is an interface all column repositories must implement.
@@ -29,7 +29,7 @@ type ColumnRepository interface {
 	Create(model.Column) (model.Column, error)
 	GetByID(int) (model.Column, error)
 	Update(model.Column) error
-	Delete(model.Column) error
+	DeleteByID(int) error
 }
 
 // TaskRepository is an interface all task repositories must implement.
@@ -38,7 +38,7 @@ type TaskRepository interface {
 	Create(model.Task) (model.Task, error)
 	GetByID(int) (model.Task, error)
 	Update(model.Task) error
-	Delete(model.Task) error
+	DeleteByID(int) error
 }
 
 // CommentRepository is an interface all comment repositories must implement.
@@ -47,5 +47,5 @@ type CommentRepository interface {
 	Create(model.Comment) (model.Comment, error)
 	GetByID(int) (model.Comment, error)
 	Update(model.Comment) error
-	Delete(model.Comment) error
+	DeleteByID(int) error
 }

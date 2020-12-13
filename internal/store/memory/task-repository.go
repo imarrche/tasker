@@ -67,13 +67,13 @@ func (r *TaskRepository) Update(t model.Task) error {
 	return store.ErrNotFound
 }
 
-// Delete deletes a task.
-func (r *TaskRepository) Delete(t model.Task) error {
+// DeleteByID deletes a task with specific ID.
+func (r *TaskRepository) DeleteByID(id int) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if _, ok := r.db.tasks[t.ID]; ok {
-		delete(r.db.tasks, t.ID)
+	if _, ok := r.db.tasks[id]; ok {
+		delete(r.db.tasks, id)
 		return nil
 	}
 

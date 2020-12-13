@@ -73,8 +73,8 @@ func TestProjectRepository_Delete(t *testing.T) {
 	p2 := model.Project{ID: 2, Name: "Project 2"}
 	s.db.projects[p1.ID] = p1
 
-	err1 := s.Projects().Delete(p1)
-	err2 := s.Projects().Delete(p2)
+	err1 := s.Projects().DeleteByID(p1.ID)
+	err2 := s.Projects().DeleteByID(p2.ID)
 
 	assert.NoError(t, err1)
 	assert.Equal(t, 0, len(s.db.projects))

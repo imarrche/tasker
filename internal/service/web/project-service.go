@@ -62,9 +62,9 @@ func (s *ProjectService) Update(p model.Project) error {
 	return s.projectRepo.Update(p)
 }
 
-// Delete deletes a project.
-func (s *ProjectService) Delete(p model.Project) error {
-	return s.projectRepo.Delete(p)
+// DeleteByID deletes a project with specific ID.
+func (s *ProjectService) DeleteByID(id int) error {
+	return s.projectRepo.DeleteByID(id)
 }
 
 // Validate validates a project.

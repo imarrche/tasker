@@ -67,13 +67,13 @@ func (r *ProjectRepository) Update(p model.Project) error {
 	return store.ErrNotFound
 }
 
-// Delete deletes a project.
-func (r *ProjectRepository) Delete(p model.Project) error {
+// DeleteByID deletes a project with specific ID.
+func (r *ProjectRepository) DeleteByID(id int) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if _, ok := r.db.projects[p.ID]; ok {
-		delete(r.db.projects, p.ID)
+	if _, ok := r.db.projects[id]; ok {
+		delete(r.db.projects, id)
 		return nil
 	}
 

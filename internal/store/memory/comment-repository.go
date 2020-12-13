@@ -67,13 +67,13 @@ func (r *CommentRepository) Update(c model.Comment) error {
 	return store.ErrNotFound
 }
 
-// Delete deletes a comment.
-func (r *CommentRepository) Delete(c model.Comment) error {
+// DeleteByID deletes a comment by specific ID.
+func (r *CommentRepository) DeleteByID(id int) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if _, ok := r.db.comments[c.ID]; ok {
-		delete(r.db.comments, c.ID)
+	if _, ok := r.db.comments[id]; ok {
+		delete(r.db.comments, id)
 		return nil
 	}
 

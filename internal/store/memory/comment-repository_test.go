@@ -73,8 +73,8 @@ func TestCommentRepository_Delete(t *testing.T) {
 	c2 := model.Comment{ID: 2, Text: "Comment 2"}
 	s.db.comments[c1.ID] = c1
 
-	err1 := s.Comments().Delete(c1)
-	err2 := s.Comments().Delete(c2)
+	err1 := s.Comments().DeleteByID(c1.ID)
+	err2 := s.Comments().DeleteByID(c2.ID)
 
 	assert.NoError(t, err1)
 	assert.Equal(t, 0, len(s.db.comments))

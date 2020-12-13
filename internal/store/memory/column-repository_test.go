@@ -73,8 +73,8 @@ func TestColumnRepository_Delete(t *testing.T) {
 	c2 := model.Column{ID: 2, Name: "Column 2"}
 	s.db.columns[c1.ID] = c1
 
-	err1 := s.Columns().Delete(c1)
-	err2 := s.Columns().Delete(c2)
+	err1 := s.Columns().DeleteByID(c1.ID)
+	err2 := s.Columns().DeleteByID(c2.ID)
 
 	assert.NoError(t, err1)
 	assert.Equal(t, 0, len(s.db.columns))

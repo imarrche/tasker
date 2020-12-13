@@ -237,7 +237,7 @@ func TestProjectService_Update(t *testing.T) {
 	}
 }
 
-func TestProjectService_Delete(t *testing.T) {
+func TestProjectService_DeleteByID(t *testing.T) {
 	testcases := [...]struct {
 		name          string
 		mock          func(*mock_store.MockProjectRepository, model.Project)
@@ -247,7 +247,7 @@ func TestProjectService_Delete(t *testing.T) {
 		{
 			name: "Project is deleted.",
 			mock: func(pr *mock_store.MockProjectRepository, p model.Project) {
-				pr.EXPECT().Delete(p).Return(nil)
+				pr.EXPECT().DeleteByID(p.ID).Return(nil)
 			},
 			project:       model.Project{ID: 1, Name: "P1"},
 			expectedError: nil,
@@ -255,7 +255,7 @@ func TestProjectService_Delete(t *testing.T) {
 		{
 			name: "Error occured while deleting project.",
 			mock: func(pr *mock_store.MockProjectRepository, p model.Project) {
-				pr.EXPECT().Delete(p).Return(errors.New("couldn't delete project"))
+				pr.EXPECT().DeleteByID(p.ID).Return(errors.New("couldn't delete project"))
 			},
 			project:       model.Project{ID: 1, Name: "P1"},
 			expectedError: errors.New("couldn't delete project"),
@@ -271,7 +271,7 @@ func TestProjectService_Delete(t *testing.T) {
 			tc.mock(pr, tc.project)
 			s := NewProjectService(pr, nil)
 
-			err := s.Delete(tc.project)
+			err := s.DeleteByID(tc.project.ID)
 			assert.Equal(t, tc.expectedError, err)
 		})
 	}

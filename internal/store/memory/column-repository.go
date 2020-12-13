@@ -67,13 +67,13 @@ func (r *ColumnRepository) Update(c model.Column) error {
 	return store.ErrNotFound
 }
 
-// Delete deletes a column.
-func (r *ColumnRepository) Delete(c model.Column) error {
+// DeleteByID deletes a column with specific ID.
+func (r *ColumnRepository) DeleteByID(id int) error {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if _, ok := r.db.columns[c.ID]; ok {
-		delete(r.db.columns, c.ID)
+	if _, ok := r.db.columns[id]; ok {
+		delete(r.db.columns, id)
 		return nil
 	}
 
