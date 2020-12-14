@@ -22,6 +22,21 @@ func TestTaskRepository_GetAll(t *testing.T) {
 	assert.Equal(t, 2, len(ts))
 }
 
+func TestTaskRepository_GetAllByProjectID(t *testing.T) {
+	s := NewStore()
+	c1 := model.Column{ID: 1, Name: "Column 1"}
+	t1 := model.Task{Name: "Task 1", Column: c1}
+	t2 := model.Task{Name: "Task 2"}
+	s.db.tasks[1] = t1
+	s.db.tasks[2] = t2
+
+	ts, err := s.Tasks().GetAllByColumnID(c1.ID)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(ts))
+	assert.Equal(t, t1, ts[0])
+}
+
 func TestTaskRepository_Create(t *testing.T) {
 	s := NewStore()
 	t1 := model.Task{Name: "Task 1"}

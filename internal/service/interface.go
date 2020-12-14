@@ -16,3 +16,13 @@ type ProjectService interface {
 	DeleteByID(int) error
 	Validate(model.Project) error
 }
+
+// ColumnService is an interface all column services must implement.
+type ColumnService interface {
+	GetAll() ([]model.Column, error)
+	Create(model.Column) (model.Column, error)
+	GetByID(int) (model.Column, error)
+	Update(model.Column) error
+	DeleteByID(int) error
+	Validate(model.Column) error
+}

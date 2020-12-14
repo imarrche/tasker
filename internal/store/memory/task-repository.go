@@ -18,7 +18,7 @@ func NewTaskRepository(db *inMemoryDb) *TaskRepository {
 	return &TaskRepository{db: db}
 }
 
-// GetAll returns all Tasks.
+// GetAll returns all tasks.
 func (r *TaskRepository) GetAll() ([]model.Task, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
@@ -26,6 +26,21 @@ func (r *TaskRepository) GetAll() ([]model.Task, error) {
 	tasks := []model.Task{}
 	for _, t := range r.db.tasks {
 		tasks = append(tasks, t)
+	}
+
+	return tasks, nil
+}
+
+// GetAllByColumnID returns all tasks that belong to specific column.
+func (r *TaskRepository) GetAllByColumnID(id int) ([]model.Task, error) {
+	r.m.RLock()
+	defer r.m.RUnlock()
+
+	tasks := []model.Task{}
+	for _, t := range r.db.tasks {
+		if t.Column.ID == id {
+			tasks = append(tasks, t)
+		}
 	}
 
 	return tasks, nil

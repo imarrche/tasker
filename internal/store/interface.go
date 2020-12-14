@@ -26,6 +26,7 @@ type ProjectRepository interface {
 // ColumnRepository is an interface all column repositories must implement.
 type ColumnRepository interface {
 	GetAll() ([]model.Column, error)
+	GetAllByProjectID(int) ([]model.Column, error)
 	Create(model.Column) (model.Column, error)
 	GetByID(int) (model.Column, error)
 	Update(model.Column) error
@@ -35,6 +36,7 @@ type ColumnRepository interface {
 // TaskRepository is an interface all task repositories must implement.
 type TaskRepository interface {
 	GetAll() ([]model.Task, error)
+	GetAllByColumnID(int) ([]model.Task, error)
 	Create(model.Task) (model.Task, error)
 	GetByID(int) (model.Task, error)
 	Update(model.Task) error

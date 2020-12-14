@@ -252,6 +252,21 @@ func (mr *MockColumnRepositoryMockRecorder) GetAll() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockColumnRepository)(nil).GetAll))
 }
 
+// GetAllByProjectID mocks base method
+func (m *MockColumnRepository) GetAllByProjectID(arg0 int) ([]model.Column, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllByProjectID", arg0)
+	ret0, _ := ret[0].([]model.Column)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllByProjectID indicates an expected call of GetAllByProjectID
+func (mr *MockColumnRepositoryMockRecorder) GetAllByProjectID(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByProjectID", reflect.TypeOf((*MockColumnRepository)(nil).GetAllByProjectID), arg0)
+}
+
 // Create mocks base method
 func (m *MockColumnRepository) Create(arg0 model.Column) (model.Column, error) {
 	m.ctrl.T.Helper()
@@ -346,6 +361,21 @@ func (m *MockTaskRepository) GetAll() ([]model.Task, error) {
 func (mr *MockTaskRepositoryMockRecorder) GetAll() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockTaskRepository)(nil).GetAll))
+}
+
+// GetAllByColumnID mocks base method
+func (m *MockTaskRepository) GetAllByColumnID(arg0 int) ([]model.Task, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllByColumnID", arg0)
+	ret0, _ := ret[0].([]model.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllByColumnID indicates an expected call of GetAllByColumnID
+func (mr *MockTaskRepositoryMockRecorder) GetAllByColumnID(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByColumnID", reflect.TypeOf((*MockTaskRepository)(nil).GetAllByColumnID), arg0)
 }
 
 // Create mocks base method

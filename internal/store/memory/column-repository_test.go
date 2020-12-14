@@ -22,6 +22,21 @@ func TestColumnRepository_GetAll(t *testing.T) {
 	assert.Equal(t, 2, len(cs))
 }
 
+func TestColumnRepository_GetAllByProjectID(t *testing.T) {
+	s := NewStore()
+	p1 := model.Project{ID: 1, Name: "Project1 "}
+	c1 := model.Column{Name: "Column 1", Project: p1}
+	c2 := model.Column{Name: "Column 2"}
+	s.db.columns[1] = c1
+	s.db.columns[2] = c2
+
+	cs, err := s.Columns().GetAllByProjectID(p1.ID)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(cs))
+	assert.Equal(t, c1, cs[0])
+}
+
 func TestColumnRepository_Create(t *testing.T) {
 	s := NewStore()
 	c1 := model.Column{Name: "Column 1"}

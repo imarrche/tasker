@@ -31,6 +31,21 @@ func (r *ColumnRepository) GetAll() ([]model.Column, error) {
 	return columns, nil
 }
 
+// GetAllByProjectID returns all columns that belong to specific project.
+func (r *ColumnRepository) GetAllByProjectID(id int) ([]model.Column, error) {
+	r.m.RLock()
+	defer r.m.RUnlock()
+
+	columns := []model.Column{}
+	for _, c := range r.db.columns {
+		if c.Project.ID == id {
+			columns = append(columns, c)
+		}
+	}
+
+	return columns, nil
+}
+
 // Create creates and returns a new column.
 func (r *ColumnRepository) Create(c model.Column) (model.Column, error) {
 	r.m.Lock()

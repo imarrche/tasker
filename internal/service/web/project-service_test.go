@@ -2,7 +2,6 @@ package web
 
 import (
 	"errors"
-	"math/rand"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -278,17 +277,6 @@ func TestProjectService_DeleteByID(t *testing.T) {
 }
 
 func TestProjectService_Validate(t *testing.T) {
-	fixedLengthString := func(length int) string {
-		var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-		rs := make([]rune, length)
-		for i := range rs {
-			rs[i] = letters[rand.Intn(len(letters))]
-		}
-
-		return string(rs)
-	}
-
 	testcases := [...]struct {
 		name          string
 		project       model.Project
