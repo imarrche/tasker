@@ -9,6 +9,8 @@ import (
 type Service struct {
 	store    store.Store
 	projects service.ProjectService
+	columns  service.ColumnService
+	tasks    service.TaskService
 }
 
 // NewService creates and returns a new Service instance.
@@ -23,4 +25,22 @@ func (s *Service) Projects() service.ProjectService {
 	}
 
 	return s.projects
+}
+
+// Columns returns column service.
+func (s *Service) Columns() service.ColumnService {
+	if s.columns == nil {
+		s.columns = NewColumnService(s.store.Columns(), s.store.Tasks())
+	}
+
+	return s.columns
+}
+
+// Tasks returns task service.
+func (s *Service) Tasks() service.TaskService {
+	if s.tasks == nil {
+		s.tasks = NewTaskService(s.store.Columns(), s.store.Tasks())
+	}
+
+	return s.tasks
 }

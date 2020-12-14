@@ -15,4 +15,6 @@ var (
 	ErrColumnAlreadyExists = errors.New("column already ixists")
 	// ErrLastColumn is thrown when user is trying to delete last column in the project.
 	ErrLastColumn = errors.New("last column cannot be deleted")
+	// ErrInvalidColumn is thrown when task has invalid column.
+	ErrInvalidColumn = errors.New("invalid column")
 )

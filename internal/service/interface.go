@@ -26,3 +26,13 @@ type ColumnService interface {
 	DeleteByID(int) error
 	Validate(model.Column) error
 }
+
+// TaskService is an interface all task services must implement.
+type TaskService interface {
+	GetAll() ([]model.Task, error)
+	Create(model.Task) (model.Task, error)
+	GetByID(int) (model.Task, error)
+	Update(model.Task) error
+	DeleteByID(int) error
+	Validate(model.Task) error
+}

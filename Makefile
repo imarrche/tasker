@@ -9,7 +9,7 @@ start:
 	./build/tasker
 
 test:
-	go test -v -cover -coverprofile=coverage.html -timeout 30s ./...
+	go test -cover -coverprofile=coverage.html -timeout 30s ./...
 
 .PHONY: coverage
 coverage:
