@@ -36,3 +36,13 @@ type TaskService interface {
 	DeleteByID(int) error
 	Validate(model.Task) error
 }
+
+// CommentService is an interface all comment services must implement.
+type CommentService interface {
+	GetAll() ([]model.Comment, error)
+	Create(model.Comment) (model.Comment, error)
+	GetByID(int) (model.Comment, error)
+	Update(model.Comment) error
+	DeleteByID(int) error
+	Validate(model.Comment) error
+}

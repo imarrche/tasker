@@ -11,6 +11,7 @@ type Service struct {
 	projects service.ProjectService
 	columns  service.ColumnService
 	tasks    service.TaskService
+	comments service.CommentService
 }
 
 // NewService creates and returns a new Service instance.
@@ -43,4 +44,13 @@ func (s *Service) Tasks() service.TaskService {
 	}
 
 	return s.tasks
+}
+
+// Comments returns comment service.
+func (s *Service) Comments() service.CommentService {
+	if s.comments == nil {
+		s.comments = NewCommentService(s.store.Tasks(), s.store.Comments())
+	}
+
+	return s.comments
 }
