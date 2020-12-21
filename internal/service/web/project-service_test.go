@@ -1,52 +1,54 @@
 package web
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/imarrche/tasker/internal/model"
+	"github.com/imarrche/tasker/internal/store"
 	mock_store "github.com/imarrche/tasker/internal/store/mocks"
 )
 
 func TestProjectService_GetAll(t *testing.T) {
-	testcases := [...]struct {
-		name             string
-		mock             func(*mock_store.MockProjectRepository)
-		expectedProjects []model.Project
-		expectedError    error
+	testcases := []struct {
+		name        string
+		mock        func(*mock_store.MockStore, *gomock.Controller)
+		expProjects []model.Project
+		expError    error
 	}{
 		{
-			name: "Projects are retrieved and sorted by name alphabetically.",
-			mock: func(pr *mock_store.MockProjectRepository) {
+			name: "Projects are retrieved and sorted by name alphabetically",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller) {
+				pr := mock_store.NewMockProjectRepo(c)
 				pr.EXPECT().GetAll().Return(
 					[]model.Project{
-						model.Project{Name: "C"},
-						model.Project{Name: "B"},
-						model.Project{Name: "A"},
+						model.Project{ID: 1, Name: "C"},
+						model.Project{ID: 2, Name: "B"},
+						model.Project{ID: 3, Name: "A"},
 					},
 					nil,
 				)
+				s.EXPECT().Projects().Return(pr)
 			},
-			expectedProjects: []model.Project{
-				model.Project{Name: "A"},
-				model.Project{Name: "B"},
-				model.Project{Name: "C"},
+			expProjects: []model.Project{
+				model.Project{ID: 3, Name: "A"},
+				model.Project{ID: 2, Name: "B"},
+				model.Project{ID: 1, Name: "C"},
 			},
-			expectedError: nil,
+			expError: nil,
 		},
 		{
-			name: "Error occured while retrieving projects.",
-			mock: func(s *mock_store.MockProjectRepository) {
-				s.EXPECT().GetAll().Return(
-					nil,
-					errors.New("couldn't get projects"),
-				)
+			name: "Error occures while retrieving projects",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller) {
+				pr := mock_store.NewMockProjectRepo(c)
+
+				pr.EXPECT().GetAll().Return(nil, store.ErrDbQuery)
+				s.EXPECT().Projects().Return(pr)
 			},
-			expectedProjects: nil,
-			expectedError:    errors.New("couldn't get projects"),
+			expProjects: nil,
+			expError:    store.ErrDbQuery,
 		},
 	}
 
@@ -55,83 +57,82 @@ func TestProjectService_GetAll(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			pr := mock_store.NewMockProjectRepository(c)
-			tc.mock(pr)
-			s := NewProjectService(pr, nil)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c)
+			s := newProjectService(store)
 
 			ps, err := s.GetAll()
-			assert.Equal(t, tc.expectedProjects, ps)
-			assert.Equal(t, tc.expectedError, err)
+			assert.Equal(t, tc.expProjects, ps)
+			assert.Equal(t, tc.expError, err)
 		})
 	}
 }
 
 func TestProjectService_Create(t *testing.T) {
-	testcases := [...]struct {
-		name string
-		mock func(
-			*mock_store.MockProjectRepository,
-			*mock_store.MockColumnRepository,
-			model.Project,
-		)
-		project         model.Project
-		expectedProject model.Project
-		expectedError   error
+	testcases := []struct {
+		name       string
+		mock       func(*mock_store.MockStore, *gomock.Controller, model.Project)
+		project    model.Project
+		expProject model.Project
+		expError   error
 	}{
 		{
-			name: "Project is created with default column.",
-			mock: func(
-				pr *mock_store.MockProjectRepository,
-				cr *mock_store.MockColumnRepository,
-				p model.Project,
-			) {
-				defaultColumn := model.Column{Name: "default", Project: p}
+			name: "Project is created with default column",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
+				pr := mock_store.NewMockProjectRepo(c)
+				cr := mock_store.NewMockColumnRepo(c)
+
 				pr.EXPECT().Create(p).Return(p, nil)
-				cr.EXPECT().Create(defaultColumn).Return(defaultColumn, nil)
+				defaultColumn := model.Column{Name: "default", Index: 1, ProjectID: p.ID}
+				cr.EXPECT().Create(defaultColumn).Return(
+					model.Column{
+						ID:        1,
+						Name:      defaultColumn.Name,
+						ProjectID: defaultColumn.ProjectID,
+					},
+					nil,
+				)
+				s.EXPECT().Projects().Return(pr)
+				s.EXPECT().Columns().Return(cr)
 			},
-			project:         model.Project{Name: "P"},
-			expectedProject: model.Project{Name: "P"},
-			expectedError:   nil,
+			project:    model.Project{Name: "P"},
+			expProject: model.Project{Name: "P"},
+			expError:   nil,
 		},
 		{
-			name: "Project didn't pass validation.",
-			mock: func(
-				pr *mock_store.MockProjectRepository,
-				cr *mock_store.MockColumnRepository,
-				p model.Project,
-			) {
-			},
-			project:         model.Project{Name: ""},
-			expectedProject: model.Project{},
-			expectedError:   ErrNameIsRequired,
+			name:       "Project doesn't pass validation",
+			mock:       func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {},
+			project:    model.Project{Name: ""},
+			expProject: model.Project{},
+			expError:   ErrNameIsRequired,
 		},
 		{
-			name: "Error occured while creating a project.",
-			mock: func(
-				pr *mock_store.MockProjectRepository,
-				cr *mock_store.MockColumnRepository,
-				p model.Project,
-			) {
-				pr.EXPECT().Create(p).Return(model.Project{}, errors.New("couldn't create project"))
+			name: "Error occures while creating a project",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
+				pr := mock_store.NewMockProjectRepo(c)
+
+				pr.EXPECT().Create(p).Return(model.Project{}, store.ErrDbQuery)
+				s.EXPECT().Projects().Return(pr)
 			},
-			project:         model.Project{Name: "P"},
-			expectedProject: model.Project{},
-			expectedError:   errors.New("couldn't create project"),
+			project:    model.Project{Name: "P"},
+			expProject: model.Project{},
+			expError:   store.ErrDbQuery,
 		},
 		{
-			name: "Project is created, but error occured while creating default column.",
-			mock: func(
-				pr *mock_store.MockProjectRepository,
-				cr *mock_store.MockColumnRepository,
-				p model.Project,
-			) {
-				defaultColumn := model.Column{Name: "default", Project: p}
+			name: "Error occures while creating default column",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
+				pr := mock_store.NewMockProjectRepo(c)
+				cr := mock_store.NewMockColumnRepo(c)
+
 				pr.EXPECT().Create(p).Return(p, nil)
-				cr.EXPECT().Create(defaultColumn).Return(model.Column{}, errors.New("couldn't create column"))
+				defaultColumn := model.Column{Name: "default", Index: 1, ProjectID: p.ID}
+				cr.EXPECT().Create(defaultColumn).Return(model.Column{}, store.ErrDbQuery)
+				s.EXPECT().Projects().Return(pr)
+				s.EXPECT().Columns().Return(cr)
 			},
-			project:         model.Project{Name: "P"},
-			expectedProject: model.Project{},
-			expectedError:   errors.New("couldn't create column"),
+			project:    model.Project{Name: "P"},
+			expProject: model.Project{},
+			expError:   store.ErrDbQuery,
 		},
 	}
 
@@ -140,43 +141,48 @@ func TestProjectService_Create(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			pr := mock_store.NewMockProjectRepository(c)
-			cr := mock_store.NewMockColumnRepository(c)
-			tc.mock(pr, cr, tc.project)
-			s := NewProjectService(pr, cr)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.project)
+			s := newProjectService(store)
 
 			p, err := s.Create(tc.project)
-			assert.Equal(t, tc.expectedProject, p)
-			assert.Equal(t, tc.expectedError, err)
+			assert.Equal(t, tc.expProject, p)
+			assert.Equal(t, tc.expError, err)
 		})
 	}
 }
 
 func TestProjectService_GetByID(t *testing.T) {
-	testcases := [...]struct {
-		name            string
-		mock            func(*mock_store.MockProjectRepository, model.Project)
-		project         model.Project
-		expectedProject model.Project
-		expectedError   error
+	testcases := []struct {
+		name       string
+		mock       func(*mock_store.MockStore, *gomock.Controller, model.Project)
+		project    model.Project
+		expProject model.Project
+		expError   error
 	}{
 		{
-			name: "Project is retrieved by ID.",
-			mock: func(pr *mock_store.MockProjectRepository, p model.Project) {
+			name: "Project is retrieved",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
+				pr := mock_store.NewMockProjectRepo(c)
+
 				pr.EXPECT().GetByID(p.ID).Return(p, nil)
+				s.EXPECT().Projects().Return(pr)
 			},
-			project:         model.Project{ID: 1, Name: "P1"},
-			expectedProject: model.Project{ID: 1, Name: "P1"},
-			expectedError:   nil,
+			project:    model.Project{ID: 1, Name: "P"},
+			expProject: model.Project{ID: 1, Name: "P"},
+			expError:   nil,
 		},
 		{
-			name: "Error occured while retrieving project.",
-			mock: func(pr *mock_store.MockProjectRepository, p model.Project) {
-				pr.EXPECT().GetByID(p.ID).Return(model.Project{}, errors.New("couldn't get project"))
+			name: "Error occures while retrieving project",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
+				pr := mock_store.NewMockProjectRepo(c)
+
+				pr.EXPECT().GetByID(p.ID).Return(model.Project{}, store.ErrDbQuery)
+				s.EXPECT().Projects().Return(pr)
 			},
-			project:         model.Project{ID: 1, Name: "P1"},
-			expectedProject: model.Project{},
-			expectedError:   errors.New("couldn't get project"),
+			project:    model.Project{ID: 1, Name: "P"},
+			expProject: model.Project{},
+			expError:   store.ErrDbQuery,
 		},
 	}
 
@@ -185,39 +191,51 @@ func TestProjectService_GetByID(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			pr := mock_store.NewMockProjectRepository(c)
-			tc.mock(pr, tc.project)
-			s := NewProjectService(pr, nil)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.project)
+			s := newProjectService(store)
 
 			p, err := s.GetByID(tc.project.ID)
-			assert.Equal(t, tc.expectedProject, p)
-			assert.Equal(t, tc.expectedError, err)
+			assert.Equal(t, tc.expProject, p)
+			assert.Equal(t, tc.expError, err)
 		})
 	}
 }
 
 func TestProjectService_Update(t *testing.T) {
-	testcases := [...]struct {
-		name          string
-		mock          func(*mock_store.MockProjectRepository, model.Project)
-		project       model.Project
-		expectedError error
+	testcases := []struct {
+		name     string
+		mock     func(*mock_store.MockStore, *gomock.Controller, model.Project)
+		project  model.Project
+		expError error
 	}{
 		{
-			name: "Project is updated.",
-			mock: func(pr *mock_store.MockProjectRepository, p model.Project) {
+			name: "Project is updated",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
+				pr := mock_store.NewMockProjectRepo(c)
+
 				pr.EXPECT().Update(p).Return(nil)
+				s.EXPECT().Projects().Return(pr)
 			},
-			project:       model.Project{ID: 1, Name: "P1"},
-			expectedError: nil,
+			project:  model.Project{ID: 1, Name: "P"},
+			expError: nil,
+		},
+		{
+			name:     "Project doesn't pass validation",
+			mock:     func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {},
+			project:  model.Project{Name: ""},
+			expError: ErrNameIsRequired,
 		},
 		{
 			name: "Error occured while updating project.",
-			mock: func(pr *mock_store.MockProjectRepository, p model.Project) {
-				pr.EXPECT().Update(p).Return(errors.New("couldn't update project"))
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
+				pr := mock_store.NewMockProjectRepo(c)
+
+				pr.EXPECT().Update(p).Return(store.ErrDbQuery)
+				s.EXPECT().Projects().Return(pr)
 			},
-			project:       model.Project{ID: 1, Name: "P1"},
-			expectedError: errors.New("couldn't update project"),
+			project:  model.Project{ID: 1, Name: "P"},
+			expError: store.ErrDbQuery,
 		},
 	}
 
@@ -226,38 +244,44 @@ func TestProjectService_Update(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			pr := mock_store.NewMockProjectRepository(c)
-			tc.mock(pr, tc.project)
-			s := NewProjectService(pr, nil)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.project)
+			s := newProjectService(store)
 
 			err := s.Update(tc.project)
-			assert.Equal(t, tc.expectedError, err)
+			assert.Equal(t, tc.expError, err)
 		})
 	}
 }
 
 func TestProjectService_DeleteByID(t *testing.T) {
-	testcases := [...]struct {
-		name          string
-		mock          func(*mock_store.MockProjectRepository, model.Project)
-		project       model.Project
-		expectedError error
+	testcases := []struct {
+		name     string
+		mock     func(*mock_store.MockStore, *gomock.Controller, model.Project)
+		project  model.Project
+		expError error
 	}{
 		{
-			name: "Project is deleted.",
-			mock: func(pr *mock_store.MockProjectRepository, p model.Project) {
+			name: "Project is deleted",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
+				pr := mock_store.NewMockProjectRepo(c)
+
 				pr.EXPECT().DeleteByID(p.ID).Return(nil)
+				s.EXPECT().Projects().Return(pr)
 			},
-			project:       model.Project{ID: 1, Name: "P1"},
-			expectedError: nil,
+			project:  model.Project{ID: 1, Name: "P"},
+			expError: nil,
 		},
 		{
-			name: "Error occured while deleting project.",
-			mock: func(pr *mock_store.MockProjectRepository, p model.Project) {
-				pr.EXPECT().DeleteByID(p.ID).Return(errors.New("couldn't delete project"))
+			name: "Error occures while deleting project",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
+				pr := mock_store.NewMockProjectRepo(c)
+
+				pr.EXPECT().DeleteByID(p.ID).Return(store.ErrDbQuery)
+				s.EXPECT().Projects().Return(pr)
 			},
-			project:       model.Project{ID: 1, Name: "P1"},
-			expectedError: errors.New("couldn't delete project"),
+			project:  model.Project{ID: 1, Name: "P"},
+			expError: store.ErrDbQuery,
 		},
 	}
 
@@ -266,49 +290,49 @@ func TestProjectService_DeleteByID(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			pr := mock_store.NewMockProjectRepository(c)
-			tc.mock(pr, tc.project)
-			s := NewProjectService(pr, nil)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.project)
+			s := newProjectService(store)
 
 			err := s.DeleteByID(tc.project.ID)
-			assert.Equal(t, tc.expectedError, err)
+			assert.Equal(t, tc.expError, err)
 		})
 	}
 }
 
 func TestProjectService_Validate(t *testing.T) {
-	testcases := [...]struct {
-		name          string
-		project       model.Project
-		expectedError error
+	testcases := []struct {
+		name     string
+		project  model.Project
+		expError error
 	}{
 		{
-			name:          "Project passed validation.",
-			project:       model.Project{Name: "P"},
-			expectedError: nil,
+			name:     "Project passes validation",
+			project:  model.Project{Name: "P"},
+			expError: nil,
 		},
 		{
-			name:          "Project's name was not provided.",
-			project:       model.Project{},
-			expectedError: ErrNameIsRequired,
+			name:     "Project doesn't pass validation because of empty name",
+			project:  model.Project{},
+			expError: ErrNameIsRequired,
 		},
 		{
-			name:          "Project's name was too long.",
-			project:       model.Project{Name: fixedLengthString(501)},
-			expectedError: ErrNameIsTooLong,
+			name:     "Project doesn't pass validation because of too long name",
+			project:  model.Project{Name: fixedLengthString(501)},
+			expError: ErrNameIsTooLong,
 		},
 		{
-			name:          "Project's description was too long.",
-			project:       model.Project{Name: "P", Description: fixedLengthString(1001)},
-			expectedError: ErrDescriptionIsTooLong,
+			name:     "Project doesn't pass validation because of too long description",
+			project:  model.Project{Name: "P", Description: fixedLengthString(1001)},
+			expError: ErrDescriptionIsTooLong,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewProjectService(nil, nil)
+			s := newProjectService(nil)
 
-			assert.Equal(t, tc.expectedError, s.Validate(tc.project))
+			assert.Equal(t, tc.expError, s.Validate(tc.project))
 		})
 	}
 }

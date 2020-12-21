@@ -4,24 +4,22 @@ import (
 	"sort"
 
 	"github.com/imarrche/tasker/internal/model"
-	"github.com/imarrche/tasker/internal/service"
 	"github.com/imarrche/tasker/internal/store"
 )
 
-// TaskService is a web task service.
-type TaskService struct {
-	columnRepo store.ColumnRepository
-	taskRepo   store.TaskRepository
+// taskService is the web task service.
+type taskService struct {
+	store store.Store
 }
 
-// NewTaskService creates and returns a new TaskService instance.
-func NewTaskService(cr store.ColumnRepository, tr store.TaskRepository) service.TaskService {
-	return &TaskService{columnRepo: cr, taskRepo: tr}
+// newTaskService creates and returns a new taskService instance.
+func newTaskService(s store.Store) *taskService {
+	return &taskService{store: s}
 }
 
-// GetAll returns all tasks sorted by index.
-func (s *TaskService) GetAll() ([]model.Task, error) {
-	ts, err := s.taskRepo.GetAll()
+// GetByColumnID returns all tasks with specific column ID sorted by index.
+func (s *taskService) GetByColumnID(id int) ([]model.Task, error) {
+	ts, err := s.store.Tasks().GetByColumnID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -34,36 +32,124 @@ func (s *TaskService) GetAll() ([]model.Task, error) {
 }
 
 // Create creates a new task.
-func (s *TaskService) Create(t model.Task) (model.Task, error) {
+func (s *taskService) Create(t model.Task) (model.Task, error) {
 	if err := s.Validate(t); err != nil {
 		return model.Task{}, err
 	}
 
-	return s.taskRepo.Create(t)
+	if _, err := s.store.Columns().GetByID(t.ColumnID); err != nil {
+		return model.Task{}, err
+	}
+
+	return s.store.Tasks().Create(t)
 }
 
-// GetByID returns task with specific ID.
-func (s *TaskService) GetByID(id int) (model.Task, error) {
-	return s.taskRepo.GetByID(id)
+// GetByID returns the task with specific ID.
+func (s *taskService) GetByID(id int) (model.Task, error) {
+	return s.store.Tasks().GetByID(id)
 }
 
 // Update updates a task.
-func (s *TaskService) Update(t model.Task) error {
+func (s *taskService) Update(t model.Task) error {
 	if err := s.Validate(t); err != nil {
 		return err
 	}
 
-	return s.taskRepo.Update(t)
+	return s.store.Tasks().Update(t)
 }
 
-// DeleteByID deletes a task with specific ID.
-func (s *TaskService) DeleteByID(id int) error {
-	// TODO: delete all task's comments also.
-	return s.taskRepo.DeleteByID(id)
+func (s *taskService) MoveToColumnByID(id int, left bool) error {
+	t, err := s.store.Tasks().GetByID(id)
+	if err != nil {
+		return err
+	}
+	c, err := s.store.Columns().GetByID(t.ColumnID)
+	if err != nil {
+		return err
+	}
+
+	nextIdx := c.Index + 1
+	if left {
+		nextIdx = c.Index - 1
+	}
+	nextColumn, err := s.store.Columns().GetByIndexAndProjectID(nextIdx, c.ProjectID)
+	if err != nil {
+		return err
+	}
+	nextColumnTasks, err := s.store.Tasks().GetByColumnID(nextColumn.ID)
+	if err != nil {
+		return err
+	}
+
+	tasks, err := s.store.Tasks().GetByColumnID(c.ID)
+	if err != nil {
+		return err
+	}
+	for _, task := range tasks {
+		if task.Index > t.Index {
+			task.Index--
+			if err = s.store.Tasks().Update(task); err != nil {
+				return err
+			}
+		}
+	}
+
+	t.ColumnID = nextColumn.ID
+	t.Index = len(nextColumnTasks) + 1
+	return s.store.Tasks().Update(t)
+}
+
+func (s *taskService) MoveByID(id int, up bool) error {
+	t, err := s.store.Tasks().GetByID(id)
+	if err != nil {
+		return err
+	}
+
+	nextIdx := t.Index + 1
+	if up {
+		nextIdx = t.Index - 1
+	}
+	nextTask, err := s.store.Tasks().GetByIndexAndColumnID(nextIdx, t.ColumnID)
+	if err != nil {
+		return err
+	}
+
+	if up {
+		t.Index--
+		nextTask.Index++
+	} else {
+		t.Index++
+		nextTask.Index--
+	}
+	if err = s.store.Tasks().Update(nextTask); err != nil {
+		return err
+	}
+
+	return s.store.Tasks().Update(t)
+}
+
+// DeleteByID deletes the task with specific ID.
+func (s *taskService) DeleteByID(id int) error {
+	t, err := s.store.Tasks().GetByID(id)
+	if err != nil {
+		return err
+	}
+
+	ts, err := s.store.Tasks().GetByColumnID(t.ColumnID)
+	for _, task := range ts {
+		if task.Index > t.Index {
+			task.Index--
+			if err = s.store.Tasks().Update(task); err != nil {
+				return err
+			}
+		}
+	}
+
+	return s.store.Tasks().DeleteByID(id)
 }
 
 // Validate validates a task.
-func (s *TaskService) Validate(t model.Task) error {
+func (s *taskService) Validate(t model.Task) error {
 	if len(t.Name) == 0 {
 		return ErrNameIsRequired
 	} else if len(t.Name) > 500 {
@@ -72,10 +158,6 @@ func (s *TaskService) Validate(t model.Task) error {
 
 	if len(t.Description) > 5000 {
 		return ErrDescriptionIsTooLong
-	}
-
-	if _, err := s.columnRepo.GetByID(t.Column.ID); err != nil {
-		return ErrInvalidColumn
 	}
 
 	return nil

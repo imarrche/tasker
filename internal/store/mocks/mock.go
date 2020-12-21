@@ -49,10 +49,10 @@ func (mr *MockStoreMockRecorder) Open() *gomock.Call {
 }
 
 // Projects mocks base method
-func (m *MockStore) Projects() store.ProjectRepository {
+func (m *MockStore) Projects() store.ProjectRepo {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Projects")
-	ret0, _ := ret[0].(store.ProjectRepository)
+	ret0, _ := ret[0].(store.ProjectRepo)
 	return ret0
 }
 
@@ -63,10 +63,10 @@ func (mr *MockStoreMockRecorder) Projects() *gomock.Call {
 }
 
 // Columns mocks base method
-func (m *MockStore) Columns() store.ColumnRepository {
+func (m *MockStore) Columns() store.ColumnRepo {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Columns")
-	ret0, _ := ret[0].(store.ColumnRepository)
+	ret0, _ := ret[0].(store.ColumnRepo)
 	return ret0
 }
 
@@ -77,10 +77,10 @@ func (mr *MockStoreMockRecorder) Columns() *gomock.Call {
 }
 
 // Tasks mocks base method
-func (m *MockStore) Tasks() store.TaskRepository {
+func (m *MockStore) Tasks() store.TaskRepo {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Tasks")
-	ret0, _ := ret[0].(store.TaskRepository)
+	ret0, _ := ret[0].(store.TaskRepo)
 	return ret0
 }
 
@@ -91,10 +91,10 @@ func (mr *MockStoreMockRecorder) Tasks() *gomock.Call {
 }
 
 // Comments mocks base method
-func (m *MockStore) Comments() store.CommentRepository {
+func (m *MockStore) Comments() store.CommentRepo {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Comments")
-	ret0, _ := ret[0].(store.CommentRepository)
+	ret0, _ := ret[0].(store.CommentRepo)
 	return ret0
 }
 
@@ -118,31 +118,31 @@ func (mr *MockStoreMockRecorder) Close() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockStore)(nil).Close))
 }
 
-// MockProjectRepository is a mock of ProjectRepository interface
-type MockProjectRepository struct {
+// MockProjectRepo is a mock of ProjectRepo interface
+type MockProjectRepo struct {
 	ctrl     *gomock.Controller
-	recorder *MockProjectRepositoryMockRecorder
+	recorder *MockProjectRepoMockRecorder
 }
 
-// MockProjectRepositoryMockRecorder is the mock recorder for MockProjectRepository
-type MockProjectRepositoryMockRecorder struct {
-	mock *MockProjectRepository
+// MockProjectRepoMockRecorder is the mock recorder for MockProjectRepo
+type MockProjectRepoMockRecorder struct {
+	mock *MockProjectRepo
 }
 
-// NewMockProjectRepository creates a new mock instance
-func NewMockProjectRepository(ctrl *gomock.Controller) *MockProjectRepository {
-	mock := &MockProjectRepository{ctrl: ctrl}
-	mock.recorder = &MockProjectRepositoryMockRecorder{mock}
+// NewMockProjectRepo creates a new mock instance
+func NewMockProjectRepo(ctrl *gomock.Controller) *MockProjectRepo {
+	mock := &MockProjectRepo{ctrl: ctrl}
+	mock.recorder = &MockProjectRepoMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockProjectRepository) EXPECT() *MockProjectRepositoryMockRecorder {
+func (m *MockProjectRepo) EXPECT() *MockProjectRepoMockRecorder {
 	return m.recorder
 }
 
 // GetAll mocks base method
-func (m *MockProjectRepository) GetAll() ([]model.Project, error) {
+func (m *MockProjectRepo) GetAll() ([]model.Project, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAll")
 	ret0, _ := ret[0].([]model.Project)
@@ -151,13 +151,13 @@ func (m *MockProjectRepository) GetAll() ([]model.Project, error) {
 }
 
 // GetAll indicates an expected call of GetAll
-func (mr *MockProjectRepositoryMockRecorder) GetAll() *gomock.Call {
+func (mr *MockProjectRepoMockRecorder) GetAll() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockProjectRepository)(nil).GetAll))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockProjectRepo)(nil).GetAll))
 }
 
 // Create mocks base method
-func (m *MockProjectRepository) Create(arg0 model.Project) (model.Project, error) {
+func (m *MockProjectRepo) Create(arg0 model.Project) (model.Project, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0)
 	ret0, _ := ret[0].(model.Project)
@@ -166,13 +166,13 @@ func (m *MockProjectRepository) Create(arg0 model.Project) (model.Project, error
 }
 
 // Create indicates an expected call of Create
-func (mr *MockProjectRepositoryMockRecorder) Create(arg0 interface{}) *gomock.Call {
+func (mr *MockProjectRepoMockRecorder) Create(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockProjectRepository)(nil).Create), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockProjectRepo)(nil).Create), arg0)
 }
 
 // GetByID mocks base method
-func (m *MockProjectRepository) GetByID(arg0 int) (model.Project, error) {
+func (m *MockProjectRepo) GetByID(arg0 int) (model.Project, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", arg0)
 	ret0, _ := ret[0].(model.Project)
@@ -181,13 +181,13 @@ func (m *MockProjectRepository) GetByID(arg0 int) (model.Project, error) {
 }
 
 // GetByID indicates an expected call of GetByID
-func (mr *MockProjectRepositoryMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
+func (mr *MockProjectRepoMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockProjectRepository)(nil).GetByID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockProjectRepo)(nil).GetByID), arg0)
 }
 
 // Update mocks base method
-func (m *MockProjectRepository) Update(arg0 model.Project) error {
+func (m *MockProjectRepo) Update(arg0 model.Project) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0)
 	ret0, _ := ret[0].(error)
@@ -195,13 +195,13 @@ func (m *MockProjectRepository) Update(arg0 model.Project) error {
 }
 
 // Update indicates an expected call of Update
-func (mr *MockProjectRepositoryMockRecorder) Update(arg0 interface{}) *gomock.Call {
+func (mr *MockProjectRepoMockRecorder) Update(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockProjectRepository)(nil).Update), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockProjectRepo)(nil).Update), arg0)
 }
 
 // DeleteByID mocks base method
-func (m *MockProjectRepository) DeleteByID(arg0 int) error {
+func (m *MockProjectRepo) DeleteByID(arg0 int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteByID", arg0)
 	ret0, _ := ret[0].(error)
@@ -209,66 +209,51 @@ func (m *MockProjectRepository) DeleteByID(arg0 int) error {
 }
 
 // DeleteByID indicates an expected call of DeleteByID
-func (mr *MockProjectRepositoryMockRecorder) DeleteByID(arg0 interface{}) *gomock.Call {
+func (mr *MockProjectRepoMockRecorder) DeleteByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockProjectRepository)(nil).DeleteByID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockProjectRepo)(nil).DeleteByID), arg0)
 }
 
-// MockColumnRepository is a mock of ColumnRepository interface
-type MockColumnRepository struct {
+// MockColumnRepo is a mock of ColumnRepo interface
+type MockColumnRepo struct {
 	ctrl     *gomock.Controller
-	recorder *MockColumnRepositoryMockRecorder
+	recorder *MockColumnRepoMockRecorder
 }
 
-// MockColumnRepositoryMockRecorder is the mock recorder for MockColumnRepository
-type MockColumnRepositoryMockRecorder struct {
-	mock *MockColumnRepository
+// MockColumnRepoMockRecorder is the mock recorder for MockColumnRepo
+type MockColumnRepoMockRecorder struct {
+	mock *MockColumnRepo
 }
 
-// NewMockColumnRepository creates a new mock instance
-func NewMockColumnRepository(ctrl *gomock.Controller) *MockColumnRepository {
-	mock := &MockColumnRepository{ctrl: ctrl}
-	mock.recorder = &MockColumnRepositoryMockRecorder{mock}
+// NewMockColumnRepo creates a new mock instance
+func NewMockColumnRepo(ctrl *gomock.Controller) *MockColumnRepo {
+	mock := &MockColumnRepo{ctrl: ctrl}
+	mock.recorder = &MockColumnRepoMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockColumnRepository) EXPECT() *MockColumnRepositoryMockRecorder {
+func (m *MockColumnRepo) EXPECT() *MockColumnRepoMockRecorder {
 	return m.recorder
 }
 
-// GetAll mocks base method
-func (m *MockColumnRepository) GetAll() ([]model.Column, error) {
+// GetByProjectID mocks base method
+func (m *MockColumnRepo) GetByProjectID(arg0 int) ([]model.Column, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAll")
+	ret := m.ctrl.Call(m, "GetByProjectID", arg0)
 	ret0, _ := ret[0].([]model.Column)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAll indicates an expected call of GetAll
-func (mr *MockColumnRepositoryMockRecorder) GetAll() *gomock.Call {
+// GetByProjectID indicates an expected call of GetByProjectID
+func (mr *MockColumnRepoMockRecorder) GetByProjectID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockColumnRepository)(nil).GetAll))
-}
-
-// GetAllByProjectID mocks base method
-func (m *MockColumnRepository) GetAllByProjectID(arg0 int) ([]model.Column, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllByProjectID", arg0)
-	ret0, _ := ret[0].([]model.Column)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAllByProjectID indicates an expected call of GetAllByProjectID
-func (mr *MockColumnRepositoryMockRecorder) GetAllByProjectID(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByProjectID", reflect.TypeOf((*MockColumnRepository)(nil).GetAllByProjectID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByProjectID", reflect.TypeOf((*MockColumnRepo)(nil).GetByProjectID), arg0)
 }
 
 // Create mocks base method
-func (m *MockColumnRepository) Create(arg0 model.Column) (model.Column, error) {
+func (m *MockColumnRepo) Create(arg0 model.Column) (model.Column, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0)
 	ret0, _ := ret[0].(model.Column)
@@ -277,13 +262,13 @@ func (m *MockColumnRepository) Create(arg0 model.Column) (model.Column, error) {
 }
 
 // Create indicates an expected call of Create
-func (mr *MockColumnRepositoryMockRecorder) Create(arg0 interface{}) *gomock.Call {
+func (mr *MockColumnRepoMockRecorder) Create(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockColumnRepository)(nil).Create), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockColumnRepo)(nil).Create), arg0)
 }
 
 // GetByID mocks base method
-func (m *MockColumnRepository) GetByID(arg0 int) (model.Column, error) {
+func (m *MockColumnRepo) GetByID(arg0 int) (model.Column, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", arg0)
 	ret0, _ := ret[0].(model.Column)
@@ -292,13 +277,28 @@ func (m *MockColumnRepository) GetByID(arg0 int) (model.Column, error) {
 }
 
 // GetByID indicates an expected call of GetByID
-func (mr *MockColumnRepositoryMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
+func (mr *MockColumnRepoMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockColumnRepository)(nil).GetByID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockColumnRepo)(nil).GetByID), arg0)
+}
+
+// GetByIndexAndProjectID mocks base method
+func (m *MockColumnRepo) GetByIndexAndProjectID(arg0, arg1 int) (model.Column, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByIndexAndProjectID", arg0, arg1)
+	ret0, _ := ret[0].(model.Column)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByIndexAndProjectID indicates an expected call of GetByIndexAndProjectID
+func (mr *MockColumnRepoMockRecorder) GetByIndexAndProjectID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByIndexAndProjectID", reflect.TypeOf((*MockColumnRepo)(nil).GetByIndexAndProjectID), arg0, arg1)
 }
 
 // Update mocks base method
-func (m *MockColumnRepository) Update(arg0 model.Column) error {
+func (m *MockColumnRepo) Update(arg0 model.Column) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0)
 	ret0, _ := ret[0].(error)
@@ -306,13 +306,13 @@ func (m *MockColumnRepository) Update(arg0 model.Column) error {
 }
 
 // Update indicates an expected call of Update
-func (mr *MockColumnRepositoryMockRecorder) Update(arg0 interface{}) *gomock.Call {
+func (mr *MockColumnRepoMockRecorder) Update(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockColumnRepository)(nil).Update), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockColumnRepo)(nil).Update), arg0)
 }
 
 // DeleteByID mocks base method
-func (m *MockColumnRepository) DeleteByID(arg0 int) error {
+func (m *MockColumnRepo) DeleteByID(arg0 int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteByID", arg0)
 	ret0, _ := ret[0].(error)
@@ -320,66 +320,51 @@ func (m *MockColumnRepository) DeleteByID(arg0 int) error {
 }
 
 // DeleteByID indicates an expected call of DeleteByID
-func (mr *MockColumnRepositoryMockRecorder) DeleteByID(arg0 interface{}) *gomock.Call {
+func (mr *MockColumnRepoMockRecorder) DeleteByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockColumnRepository)(nil).DeleteByID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockColumnRepo)(nil).DeleteByID), arg0)
 }
 
-// MockTaskRepository is a mock of TaskRepository interface
-type MockTaskRepository struct {
+// MockTaskRepo is a mock of TaskRepo interface
+type MockTaskRepo struct {
 	ctrl     *gomock.Controller
-	recorder *MockTaskRepositoryMockRecorder
+	recorder *MockTaskRepoMockRecorder
 }
 
-// MockTaskRepositoryMockRecorder is the mock recorder for MockTaskRepository
-type MockTaskRepositoryMockRecorder struct {
-	mock *MockTaskRepository
+// MockTaskRepoMockRecorder is the mock recorder for MockTaskRepo
+type MockTaskRepoMockRecorder struct {
+	mock *MockTaskRepo
 }
 
-// NewMockTaskRepository creates a new mock instance
-func NewMockTaskRepository(ctrl *gomock.Controller) *MockTaskRepository {
-	mock := &MockTaskRepository{ctrl: ctrl}
-	mock.recorder = &MockTaskRepositoryMockRecorder{mock}
+// NewMockTaskRepo creates a new mock instance
+func NewMockTaskRepo(ctrl *gomock.Controller) *MockTaskRepo {
+	mock := &MockTaskRepo{ctrl: ctrl}
+	mock.recorder = &MockTaskRepoMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockTaskRepository) EXPECT() *MockTaskRepositoryMockRecorder {
+func (m *MockTaskRepo) EXPECT() *MockTaskRepoMockRecorder {
 	return m.recorder
 }
 
-// GetAll mocks base method
-func (m *MockTaskRepository) GetAll() ([]model.Task, error) {
+// GetByColumnID mocks base method
+func (m *MockTaskRepo) GetByColumnID(arg0 int) ([]model.Task, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAll")
+	ret := m.ctrl.Call(m, "GetByColumnID", arg0)
 	ret0, _ := ret[0].([]model.Task)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAll indicates an expected call of GetAll
-func (mr *MockTaskRepositoryMockRecorder) GetAll() *gomock.Call {
+// GetByColumnID indicates an expected call of GetByColumnID
+func (mr *MockTaskRepoMockRecorder) GetByColumnID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockTaskRepository)(nil).GetAll))
-}
-
-// GetAllByColumnID mocks base method
-func (m *MockTaskRepository) GetAllByColumnID(arg0 int) ([]model.Task, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllByColumnID", arg0)
-	ret0, _ := ret[0].([]model.Task)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAllByColumnID indicates an expected call of GetAllByColumnID
-func (mr *MockTaskRepositoryMockRecorder) GetAllByColumnID(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllByColumnID", reflect.TypeOf((*MockTaskRepository)(nil).GetAllByColumnID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByColumnID", reflect.TypeOf((*MockTaskRepo)(nil).GetByColumnID), arg0)
 }
 
 // Create mocks base method
-func (m *MockTaskRepository) Create(arg0 model.Task) (model.Task, error) {
+func (m *MockTaskRepo) Create(arg0 model.Task) (model.Task, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0)
 	ret0, _ := ret[0].(model.Task)
@@ -388,13 +373,13 @@ func (m *MockTaskRepository) Create(arg0 model.Task) (model.Task, error) {
 }
 
 // Create indicates an expected call of Create
-func (mr *MockTaskRepositoryMockRecorder) Create(arg0 interface{}) *gomock.Call {
+func (mr *MockTaskRepoMockRecorder) Create(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTaskRepository)(nil).Create), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTaskRepo)(nil).Create), arg0)
 }
 
 // GetByID mocks base method
-func (m *MockTaskRepository) GetByID(arg0 int) (model.Task, error) {
+func (m *MockTaskRepo) GetByID(arg0 int) (model.Task, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", arg0)
 	ret0, _ := ret[0].(model.Task)
@@ -403,13 +388,28 @@ func (m *MockTaskRepository) GetByID(arg0 int) (model.Task, error) {
 }
 
 // GetByID indicates an expected call of GetByID
-func (mr *MockTaskRepositoryMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
+func (mr *MockTaskRepoMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockTaskRepository)(nil).GetByID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockTaskRepo)(nil).GetByID), arg0)
+}
+
+// GetByIndexAndColumnID mocks base method
+func (m *MockTaskRepo) GetByIndexAndColumnID(arg0, arg1 int) (model.Task, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByIndexAndColumnID", arg0, arg1)
+	ret0, _ := ret[0].(model.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByIndexAndColumnID indicates an expected call of GetByIndexAndColumnID
+func (mr *MockTaskRepoMockRecorder) GetByIndexAndColumnID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByIndexAndColumnID", reflect.TypeOf((*MockTaskRepo)(nil).GetByIndexAndColumnID), arg0, arg1)
 }
 
 // Update mocks base method
-func (m *MockTaskRepository) Update(arg0 model.Task) error {
+func (m *MockTaskRepo) Update(arg0 model.Task) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0)
 	ret0, _ := ret[0].(error)
@@ -417,13 +417,13 @@ func (m *MockTaskRepository) Update(arg0 model.Task) error {
 }
 
 // Update indicates an expected call of Update
-func (mr *MockTaskRepositoryMockRecorder) Update(arg0 interface{}) *gomock.Call {
+func (mr *MockTaskRepoMockRecorder) Update(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockTaskRepository)(nil).Update), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockTaskRepo)(nil).Update), arg0)
 }
 
 // DeleteByID mocks base method
-func (m *MockTaskRepository) DeleteByID(arg0 int) error {
+func (m *MockTaskRepo) DeleteByID(arg0 int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteByID", arg0)
 	ret0, _ := ret[0].(error)
@@ -431,51 +431,51 @@ func (m *MockTaskRepository) DeleteByID(arg0 int) error {
 }
 
 // DeleteByID indicates an expected call of DeleteByID
-func (mr *MockTaskRepositoryMockRecorder) DeleteByID(arg0 interface{}) *gomock.Call {
+func (mr *MockTaskRepoMockRecorder) DeleteByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockTaskRepository)(nil).DeleteByID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockTaskRepo)(nil).DeleteByID), arg0)
 }
 
-// MockCommentRepository is a mock of CommentRepository interface
-type MockCommentRepository struct {
+// MockCommentRepo is a mock of CommentRepo interface
+type MockCommentRepo struct {
 	ctrl     *gomock.Controller
-	recorder *MockCommentRepositoryMockRecorder
+	recorder *MockCommentRepoMockRecorder
 }
 
-// MockCommentRepositoryMockRecorder is the mock recorder for MockCommentRepository
-type MockCommentRepositoryMockRecorder struct {
-	mock *MockCommentRepository
+// MockCommentRepoMockRecorder is the mock recorder for MockCommentRepo
+type MockCommentRepoMockRecorder struct {
+	mock *MockCommentRepo
 }
 
-// NewMockCommentRepository creates a new mock instance
-func NewMockCommentRepository(ctrl *gomock.Controller) *MockCommentRepository {
-	mock := &MockCommentRepository{ctrl: ctrl}
-	mock.recorder = &MockCommentRepositoryMockRecorder{mock}
+// NewMockCommentRepo creates a new mock instance
+func NewMockCommentRepo(ctrl *gomock.Controller) *MockCommentRepo {
+	mock := &MockCommentRepo{ctrl: ctrl}
+	mock.recorder = &MockCommentRepoMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockCommentRepository) EXPECT() *MockCommentRepositoryMockRecorder {
+func (m *MockCommentRepo) EXPECT() *MockCommentRepoMockRecorder {
 	return m.recorder
 }
 
-// GetAll mocks base method
-func (m *MockCommentRepository) GetAll() ([]model.Comment, error) {
+// GetByTaskID mocks base method
+func (m *MockCommentRepo) GetByTaskID(arg0 int) ([]model.Comment, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAll")
+	ret := m.ctrl.Call(m, "GetByTaskID", arg0)
 	ret0, _ := ret[0].([]model.Comment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetAll indicates an expected call of GetAll
-func (mr *MockCommentRepositoryMockRecorder) GetAll() *gomock.Call {
+// GetByTaskID indicates an expected call of GetByTaskID
+func (mr *MockCommentRepoMockRecorder) GetByTaskID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockCommentRepository)(nil).GetAll))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByTaskID", reflect.TypeOf((*MockCommentRepo)(nil).GetByTaskID), arg0)
 }
 
 // Create mocks base method
-func (m *MockCommentRepository) Create(arg0 model.Comment) (model.Comment, error) {
+func (m *MockCommentRepo) Create(arg0 model.Comment) (model.Comment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", arg0)
 	ret0, _ := ret[0].(model.Comment)
@@ -484,13 +484,13 @@ func (m *MockCommentRepository) Create(arg0 model.Comment) (model.Comment, error
 }
 
 // Create indicates an expected call of Create
-func (mr *MockCommentRepositoryMockRecorder) Create(arg0 interface{}) *gomock.Call {
+func (mr *MockCommentRepoMockRecorder) Create(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCommentRepository)(nil).Create), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockCommentRepo)(nil).Create), arg0)
 }
 
 // GetByID mocks base method
-func (m *MockCommentRepository) GetByID(arg0 int) (model.Comment, error) {
+func (m *MockCommentRepo) GetByID(arg0 int) (model.Comment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", arg0)
 	ret0, _ := ret[0].(model.Comment)
@@ -499,13 +499,13 @@ func (m *MockCommentRepository) GetByID(arg0 int) (model.Comment, error) {
 }
 
 // GetByID indicates an expected call of GetByID
-func (mr *MockCommentRepositoryMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
+func (mr *MockCommentRepoMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockCommentRepository)(nil).GetByID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockCommentRepo)(nil).GetByID), arg0)
 }
 
 // Update mocks base method
-func (m *MockCommentRepository) Update(arg0 model.Comment) error {
+func (m *MockCommentRepo) Update(arg0 model.Comment) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0)
 	ret0, _ := ret[0].(error)
@@ -513,13 +513,13 @@ func (m *MockCommentRepository) Update(arg0 model.Comment) error {
 }
 
 // Update indicates an expected call of Update
-func (mr *MockCommentRepositoryMockRecorder) Update(arg0 interface{}) *gomock.Call {
+func (mr *MockCommentRepoMockRecorder) Update(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockCommentRepository)(nil).Update), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockCommentRepo)(nil).Update), arg0)
 }
 
 // DeleteByID mocks base method
-func (m *MockCommentRepository) DeleteByID(arg0 int) error {
+func (m *MockCommentRepo) DeleteByID(arg0 int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteByID", arg0)
 	ret0, _ := ret[0].(error)
@@ -527,7 +527,7 @@ func (m *MockCommentRepository) DeleteByID(arg0 int) error {
 }
 
 // DeleteByID indicates an expected call of DeleteByID
-func (mr *MockCommentRepositoryMockRecorder) DeleteByID(arg0 interface{}) *gomock.Call {
+func (mr *MockCommentRepoMockRecorder) DeleteByID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockCommentRepository)(nil).DeleteByID), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByID", reflect.TypeOf((*MockCommentRepo)(nil).DeleteByID), arg0)
 }

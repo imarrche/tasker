@@ -4,25 +4,22 @@ import (
 	"sort"
 
 	"github.com/imarrche/tasker/internal/model"
-	"github.com/imarrche/tasker/internal/service"
 	"github.com/imarrche/tasker/internal/store"
 )
 
-// ColumnService is a web column service.
-type ColumnService struct {
-	projectRepo store.ProjectRepository
-	columnRepo  store.ColumnRepository
-	taskRepo    store.TaskRepository
+// columnService is the web column service.
+type columnService struct {
+	store store.Store
 }
 
-// NewColumnService creates and returns a new ColumnService instance.
-func NewColumnService(cr store.ColumnRepository, tr store.TaskRepository) service.ColumnService {
-	return &ColumnService{columnRepo: cr, taskRepo: tr}
+// newColumnService creates and returns a new columnService instance.
+func newColumnService(s store.Store) *columnService {
+	return &columnService{store: s}
 }
 
-// GetAll returns all columns sorted alphabetically by name.
-func (s *ColumnService) GetAll() ([]model.Column, error) {
-	cs, err := s.columnRepo.GetAll()
+// GetByProjectID returns all columns with specific project ID sorted by index.
+func (s *columnService) GetByProjectID(id int) ([]model.Column, error) {
+	cs, err := s.store.Columns().GetByProjectID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -35,36 +32,69 @@ func (s *ColumnService) GetAll() ([]model.Column, error) {
 }
 
 // Create creates a new column.
-func (s *ColumnService) Create(c model.Column) (model.Column, error) {
+func (s *columnService) Create(c model.Column) (model.Column, error) {
 	if err := s.Validate(c); err != nil {
 		return model.Column{}, err
 	}
 
-	return s.columnRepo.Create(c)
+	if _, err := s.store.Projects().GetByID(c.ProjectID); err != nil {
+		return model.Column{}, err
+	}
+
+	return s.store.Columns().Create(c)
 }
 
-// GetByID returns column with specific ID.
-func (s *ColumnService) GetByID(id int) (model.Column, error) {
-	return s.columnRepo.GetByID(id)
+// GetByID returns the column with specific ID.
+func (s *columnService) GetByID(id int) (model.Column, error) {
+	return s.store.Columns().GetByID(id)
 }
 
 // Update updates a column.
-func (s *ColumnService) Update(c model.Column) error {
+func (s *columnService) Update(c model.Column) error {
 	if err := s.Validate(c); err != nil {
 		return err
 	}
 
-	return s.columnRepo.Update(c)
+	return s.store.Columns().Update(c)
 }
 
-// DeleteByID deletes a column with specific ID.
-func (s *ColumnService) DeleteByID(id int) error {
-	c, err := s.columnRepo.GetByID(id)
+// MoveByID moves the column with specific ID to left/right.
+func (s *columnService) MoveByID(id int, left bool) error {
+	c, err := s.store.Columns().GetByID(id)
 	if err != nil {
 		return err
 	}
 
-	cs, err := s.columnRepo.GetAllByProjectID(c.Project.ID)
+	nextIdx := c.Index + 1
+	if left {
+		nextIdx = c.Index - 1
+	}
+	nextColumn, err := s.store.Columns().GetByIndexAndProjectID(nextIdx, c.ProjectID)
+	if err != nil {
+		return err
+	}
+
+	if left {
+		c.Index--
+		nextColumn.Index++
+	} else {
+		c.Index++
+		nextColumn.Index--
+	}
+	if err = s.store.Columns().Update(nextColumn); err != nil {
+		return err
+	}
+
+	return s.store.Columns().Update(c)
+}
+
+// DeleteByID deletes the column with specific ID.
+func (s *columnService) DeleteByID(id int) error {
+	c, err := s.store.Columns().GetByID(id)
+	if err != nil {
+		return err
+	}
+	cs, err := s.store.Columns().GetByProjectID(c.ProjectID)
 	if err != nil {
 		return err
 	}
@@ -72,28 +102,56 @@ func (s *ColumnService) DeleteByID(id int) error {
 		return ErrLastColumn
 	}
 
-	_, err = s.taskRepo.GetAllByColumnID(c.ID)
+	nextIdx := c.Index - 1
+	if nextIdx == 0 {
+		nextIdx = 2
+	}
+	tasks, err := s.store.Tasks().GetByColumnID(c.ID)
 	if err != nil {
 		return err
 	}
-	// TODO: move tasks to the column to the left.
+	var nextColumn model.Column
+	for _, column := range cs {
+		if column.Index == nextIdx {
+			nextColumn = column
+			break
+		}
+	}
+	nextColumnTasks, err := s.store.Tasks().GetByColumnID(nextColumn.ID)
+	if err != nil {
+		return err
+	}
+	nextIdx = len(nextColumnTasks) + 1
+	for _, t := range tasks {
+		t.ColumnID = nextColumn.ID
+		t.Index = nextIdx
+		if err = s.store.Tasks().Update(t); err != nil {
+			return err
+		}
+		nextIdx++
+	}
 
-	return s.columnRepo.DeleteByID(id)
+	for _, column := range cs {
+		if column.Index > c.Index {
+			column.Index--
+			if err = s.store.Columns().Update(column); err != nil {
+				return err
+			}
+		}
+	}
+
+	return s.store.Columns().DeleteByID(id)
 }
 
 // Validate validates a column.
-func (s *ColumnService) Validate(c model.Column) error {
+func (s *columnService) Validate(c model.Column) error {
 	if len(c.Name) == 0 {
 		return ErrNameIsRequired
 	} else if len(c.Name) > 255 {
 		return ErrNameIsTooLong
 	}
 
-	if c.Project.ID == 0 {
-		return ErrProjectIsRequired
-	}
-
-	cs, err := s.columnRepo.GetAllByProjectID(c.Project.ID)
+	cs, err := s.store.Columns().GetByProjectID(c.ProjectID)
 	if err != nil {
 		return err
 	}

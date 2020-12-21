@@ -1,7 +1,6 @@
 package web
 
 import (
-	"errors"
 	"testing"
 	"time"
 
@@ -9,42 +8,82 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/imarrche/tasker/internal/model"
+	"github.com/imarrche/tasker/internal/store"
 	mock_store "github.com/imarrche/tasker/internal/store/mocks"
 )
 
-func TestCommentService_GetAll(t *testing.T) {
-	testcases := [...]struct {
-		name             string
-		mock             func(*mock_store.MockCommentRepository)
-		expectedComments []model.Comment
-		expectedError    error
+func TestCommentService_GetByTaskID(t *testing.T) {
+	testcases := []struct {
+		name        string
+		mock        func(*mock_store.MockStore, *gomock.Controller, model.Task)
+		task        model.Task
+		expComments []model.Comment
+		expError    error
 	}{
 		{
 			name: "Comments are retrieved and sorted by creating date",
-			mock: func(cr *mock_store.MockCommentRepository) {
-				cr.EXPECT().GetAll().Return(
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, t model.Task) {
+				cr := mock_store.NewMockCommentRepo(c)
+
+				cr.EXPECT().GetByTaskID(t.ID).Return(
 					[]model.Comment{
-						model.Comment{CreatedAt: time.Date(2020, 12, 1, 0, 0, 0, 0, &time.Location{})},
-						model.Comment{CreatedAt: time.Date(2020, 12, 2, 0, 0, 0, 0, &time.Location{})},
-						model.Comment{CreatedAt: time.Date(2020, 12, 3, 0, 0, 0, 0, &time.Location{})},
+						model.Comment{
+							ID:        1,
+							Text:      "C1",
+							CreatedAt: time.Date(2020, 12, 1, 0, 0, 0, 0, &time.Location{}),
+							TaskID:    t.ID,
+						},
+						model.Comment{
+							ID:        2,
+							Text:      "C2",
+							CreatedAt: time.Date(2020, 12, 2, 0, 0, 0, 0, &time.Location{}),
+							TaskID:    t.ID,
+						},
+						model.Comment{
+							ID:        3,
+							Text:      "C3",
+							CreatedAt: time.Date(2020, 12, 3, 0, 0, 0, 0, &time.Location{}),
+							TaskID:    t.ID,
+						},
 					},
 					nil,
 				)
+				s.EXPECT().Comments().Return(cr)
 			},
-			expectedComments: []model.Comment{
-				model.Comment{CreatedAt: time.Date(2020, 12, 3, 0, 0, 0, 0, &time.Location{})},
-				model.Comment{CreatedAt: time.Date(2020, 12, 2, 0, 0, 0, 0, &time.Location{})},
-				model.Comment{CreatedAt: time.Date(2020, 12, 1, 0, 0, 0, 0, &time.Location{})},
+			task: model.Task{ID: 1, Name: "T", Index: 1, ColumnID: 1},
+			expComments: []model.Comment{
+				model.Comment{
+					ID:        3,
+					Text:      "C3",
+					CreatedAt: time.Date(2020, 12, 3, 0, 0, 0, 0, &time.Location{}),
+					TaskID:    1,
+				},
+				model.Comment{
+					ID:        2,
+					Text:      "C2",
+					CreatedAt: time.Date(2020, 12, 2, 0, 0, 0, 0, &time.Location{}),
+					TaskID:    1,
+				},
+				model.Comment{
+					ID:        1,
+					Text:      "C1",
+					CreatedAt: time.Date(2020, 12, 1, 0, 0, 0, 0, &time.Location{}),
+					TaskID:    1,
+				},
 			},
-			expectedError: nil,
+			expError: nil,
 		},
 		{
-			name: "Error occured while retrieving columns",
-			mock: func(cr *mock_store.MockCommentRepository) {
-				cr.EXPECT().GetAll().Return(nil, errors.New("couldn't get comments"))
+			name: "Error occures while retrieving columns",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, t model.Task) {
+				cr := mock_store.NewMockCommentRepo(c)
+
+				cr.EXPECT().GetByTaskID(t.ID).Return(nil, store.ErrDbQuery)
+				s.EXPECT().Comments().Return(cr)
 			},
-			expectedComments: nil,
-			expectedError:    errors.New("couldn't get comments"),
+			task:        model.Task{ID: 1, Name: "T", Index: 1, ColumnID: 1},
+			expComments: nil,
+			expError:    store.ErrDbQuery,
 		},
 	}
 
@@ -53,54 +92,65 @@ func TestCommentService_GetAll(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			cr := mock_store.NewMockCommentRepository(c)
-			tc.mock(cr)
-			s := NewCommentService(nil, cr)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.task)
+			s := newCommentService(store)
 
-			cs, err := s.GetAll()
-			assert.Equal(t, tc.expectedError, err)
-			assert.Equal(t, tc.expectedComments, cs)
+			cs, err := s.GetByTaskID(tc.task.ID)
+			assert.Equal(t, tc.expError, err)
+			assert.Equal(t, tc.expComments, cs)
 		})
 	}
 }
 
 func TestCommentService_Create(t *testing.T) {
-	testcases := [...]struct {
-		name string
-		mock func(
-			*mock_store.MockTaskRepository,
-			*mock_store.MockCommentRepository,
-			model.Comment,
-		)
-		comment         model.Comment
-		expectedComment model.Comment
-		expectedError   error
+	testcases := []struct {
+		name       string
+		mock       func(*mock_store.MockStore, *gomock.Controller, model.Comment)
+		comment    model.Comment
+		expComment model.Comment
+		expError   error
 	}{
 		{
-			name: "Comment is created.",
-			mock: func(
-				tr *mock_store.MockTaskRepository,
-				cr *mock_store.MockCommentRepository,
-				c model.Comment,
-			) {
-				tr.EXPECT().GetByID(c.Task.ID).Return(c.Task, nil)
-				cr.EXPECT().Create(c).Return(c, nil)
+			name: "Comment is created",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {
+				tr := mock_store.NewMockTaskRepo(c)
+				cr := mock_store.NewMockCommentRepo(c)
+
+				tr.EXPECT().GetByID(comment.TaskID).Return(model.Task{ID: 1}, nil)
+				cr.EXPECT().Create(comment).Return(
+					model.Comment{
+						ID:     1,
+						Text:   comment.Text,
+						TaskID: comment.TaskID,
+					},
+					nil,
+				)
+				s.EXPECT().Tasks().Return(tr)
+				s.EXPECT().Comments().Return(cr)
 			},
-			comment:         model.Comment{Text: "C1", Task: model.Task{ID: 1}},
-			expectedComment: model.Comment{Text: "C1", Task: model.Task{ID: 1}},
-			expectedError:   nil,
+			comment:    model.Comment{Text: "C", TaskID: 1},
+			expComment: model.Comment{ID: 1, Text: "C", TaskID: 1},
+			expError:   nil,
 		},
 		{
-			name: "Comment didn't pass validation.",
-			mock: func(
-				tr *mock_store.MockTaskRepository,
-				cr *mock_store.MockCommentRepository,
-				c model.Comment,
-			) {
+			name:       "Comment doesn't pass validation",
+			mock:       func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {},
+			comment:    model.Comment{},
+			expComment: model.Comment{},
+			expError:   ErrTextIsRequired,
+		},
+		{
+			name: "Invalid task ID provided",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {
+				tr := mock_store.NewMockTaskRepo(c)
+
+				tr.EXPECT().GetByID(comment.TaskID).Return(model.Task{}, store.ErrNotFound)
+				s.EXPECT().Tasks().Return(tr)
 			},
-			comment:         model.Comment{},
-			expectedComment: model.Comment{},
-			expectedError:   ErrTextIsRequired,
+			comment:    model.Comment{Text: "C", TaskID: 1},
+			expComment: model.Comment{},
+			expError:   store.ErrNotFound,
 		},
 	}
 
@@ -109,34 +159,36 @@ func TestCommentService_Create(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			tr := mock_store.NewMockTaskRepository(c)
-			cr := mock_store.NewMockCommentRepository(c)
-			tc.mock(tr, cr, tc.comment)
-			s := NewCommentService(tr, cr)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.comment)
+			s := newCommentService(store)
 
 			comment, err := s.Create(tc.comment)
-			assert.Equal(t, tc.expectedError, err)
-			assert.Equal(t, tc.expectedComment, comment)
+			assert.Equal(t, tc.expError, err)
+			assert.Equal(t, tc.expComment, comment)
 		})
 	}
 }
 
 func TestCommentService_GetByID(t *testing.T) {
-	testcases := [...]struct {
-		name            string
-		mock            func(*mock_store.MockCommentRepository, model.Comment)
-		comment         model.Comment
-		expectedComment model.Comment
-		expectedError   error
+	testcases := []struct {
+		name       string
+		mock       func(*mock_store.MockStore, *gomock.Controller, model.Comment)
+		comment    model.Comment
+		expComment model.Comment
+		expError   error
 	}{
 		{
-			name: "Comment is retrieved by ID.",
-			mock: func(cr *mock_store.MockCommentRepository, c model.Comment) {
-				cr.EXPECT().GetByID(c.ID).Return(c, nil)
+			name: "Comment is retrieved",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {
+				cr := mock_store.NewMockCommentRepo(c)
+
+				cr.EXPECT().GetByID(comment.ID).Return(comment, nil)
+				s.EXPECT().Comments().Return(cr)
 			},
-			comment:         model.Comment{ID: 1},
-			expectedComment: model.Comment{ID: 1},
-			expectedError:   nil,
+			comment:    model.Comment{ID: 1, Text: "C", TaskID: 1},
+			expComment: model.Comment{ID: 1, Text: "C", TaskID: 1},
+			expError:   nil,
 		},
 	}
 
@@ -145,52 +197,41 @@ func TestCommentService_GetByID(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			cr := mock_store.NewMockCommentRepository(c)
-			tc.mock(cr, tc.comment)
-			s := NewCommentService(nil, cr)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.comment)
+			s := newCommentService(store)
 
 			comment, err := s.GetByID(tc.comment.ID)
-			assert.Equal(t, tc.expectedError, err)
-			assert.Equal(t, tc.expectedComment, comment)
+			assert.Equal(t, tc.expError, err)
+			assert.Equal(t, tc.expComment, comment)
 		})
 	}
 }
 
 func TestCommentService_Update(t *testing.T) {
-	testcases := [...]struct {
-		name string
-		mock func(
-			*mock_store.MockTaskRepository,
-			*mock_store.MockCommentRepository,
-			model.Comment,
-		)
-		comment         model.Comment
-		expectedComment model.Comment
-		expectedError   error
+	testcases := []struct {
+		name       string
+		mock       func(*mock_store.MockStore, *gomock.Controller, model.Comment)
+		comment    model.Comment
+		expComment model.Comment
+		expError   error
 	}{
 		{
-			name: "Comment is updated.",
-			mock: func(
-				tr *mock_store.MockTaskRepository,
-				cr *mock_store.MockCommentRepository,
-				c model.Comment,
-			) {
-				tr.EXPECT().GetByID(c.Task.ID).Return(c.Task, nil)
-				cr.EXPECT().Update(c).Return(nil)
+			name: "Comment is updated",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {
+				cr := mock_store.NewMockCommentRepo(c)
+
+				cr.EXPECT().Update(comment).Return(nil)
+				s.EXPECT().Comments().Return(cr)
 			},
-			comment:       model.Comment{Text: "C1", Task: model.Task{ID: 1}},
-			expectedError: nil,
+			comment:  model.Comment{ID: 1, Text: "C", TaskID: 1},
+			expError: nil,
 		},
 		{
-			name: "Comment didn't pass validation.",
-			mock: func(
-				tr *mock_store.MockTaskRepository,
-				cr *mock_store.MockCommentRepository,
-				c model.Comment,
-			) {
-			},
-			comment:       model.Comment{},
-			expectedError: ErrTextIsRequired,
+			name:     "Comment doesn't pass validation.",
+			mock:     func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {},
+			comment:  model.Comment{},
+			expError: ErrTextIsRequired,
 		},
 	}
 
@@ -199,39 +240,33 @@ func TestCommentService_Update(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			tr := mock_store.NewMockTaskRepository(c)
-			cr := mock_store.NewMockCommentRepository(c)
-			tc.mock(tr, cr, tc.comment)
-			s := NewCommentService(tr, cr)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.comment)
+			s := newCommentService(store)
 
 			err := s.Update(tc.comment)
-			assert.Equal(t, tc.expectedError, err)
+			assert.Equal(t, tc.expError, err)
 		})
 	}
 }
 
 func TestCommentService_DeleteByID(t *testing.T) {
-	testcases := [...]struct {
-		name          string
-		mock          func(*mock_store.MockCommentRepository, model.Comment)
-		comment       model.Comment
-		expectedError error
+	testcases := []struct {
+		name     string
+		mock     func(*mock_store.MockStore, *gomock.Controller, model.Comment)
+		comment  model.Comment
+		expError error
 	}{
 		{
-			name: "Task is deleted.",
-			mock: func(cr *mock_store.MockCommentRepository, c model.Comment) {
-				cr.EXPECT().DeleteByID(c.ID).Return(nil)
+			name: "Task is deleted",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {
+				cr := mock_store.NewMockCommentRepo(c)
+
+				cr.EXPECT().DeleteByID(comment.ID).Return(nil)
+				s.EXPECT().Comments().Return(cr)
 			},
-			comment:       model.Comment{ID: 1},
-			expectedError: nil,
-		},
-		{
-			name: "Error occured while deleting comment.",
-			mock: func(cr *mock_store.MockCommentRepository, c model.Comment) {
-				cr.EXPECT().DeleteByID(c.ID).Return(errors.New("couldn't delete comment"))
-			},
-			comment:       model.Comment{ID: 1},
-			expectedError: errors.New("couldn't delete comment"),
+			comment:  model.Comment{ID: 1, Text: "C", TaskID: 1},
+			expError: nil,
 		},
 	}
 
@@ -240,72 +275,40 @@ func TestCommentService_DeleteByID(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			cr := mock_store.NewMockCommentRepository(c)
-			tc.mock(cr, tc.comment)
-			s := NewCommentService(nil, cr)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.comment)
+			s := newCommentService(store)
 
 			err := s.DeleteByID(tc.comment.ID)
-			assert.Equal(t, tc.expectedError, err)
+			assert.Equal(t, tc.expError, err)
 		})
 	}
 }
 
 func TestCommentService_Validate(t *testing.T) {
-	testcases := [...]struct {
-		name string
-		mock func(
-			*mock_store.MockTaskRepository,
-			*mock_store.MockCommentRepository,
-			model.Comment,
-		)
-		comment       model.Comment
-		expectedError error
+	testcases := []struct {
+		name     string
+		mock     func(s *mock_store.MockStore, c *gomock.Controller, cooment model.Comment)
+		comment  model.Comment
+		expError error
 	}{
 		{
-			name: "Comment passes validation.",
-			mock: func(
-				tr *mock_store.MockTaskRepository,
-				cr *mock_store.MockCommentRepository,
-				c model.Comment,
-			) {
-				tr.EXPECT().GetByID(c.Task.ID).Return(c.Task, nil)
-			},
-			comment:       model.Comment{Text: "C1", Task: model.Task{ID: 1}},
-			expectedError: nil,
+			name:     "Comment passes validation",
+			mock:     func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {},
+			comment:  model.Comment{Text: "C"},
+			expError: nil,
 		},
 		{
-			name: "Comment's text is not provided.",
-			mock: func(
-				tr *mock_store.MockTaskRepository,
-				cr *mock_store.MockCommentRepository,
-				c model.Comment,
-			) {
-			},
-			comment:       model.Comment{},
-			expectedError: ErrTextIsRequired,
+			name:     "Comment doesn't pass validation because of empty text",
+			mock:     func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {},
+			comment:  model.Comment{},
+			expError: ErrTextIsRequired,
 		},
 		{
-			name: "Comment's text is too long.",
-			mock: func(
-				tr *mock_store.MockTaskRepository,
-				cr *mock_store.MockCommentRepository,
-				c model.Comment,
-			) {
-			},
-			comment:       model.Comment{Text: fixedLengthString(5001)},
-			expectedError: ErrTextIsTooLong,
-		},
-		{
-			name: "Comment's task is invalid.",
-			mock: func(
-				tr *mock_store.MockTaskRepository,
-				cr *mock_store.MockCommentRepository,
-				c model.Comment,
-			) {
-				tr.EXPECT().GetByID(c.Task.ID).Return(model.Task{}, ErrInvalidTask)
-			},
-			comment:       model.Comment{Text: "C1", Task: model.Task{ID: 1}},
-			expectedError: ErrInvalidTask,
+			name:     "Comment doesn't pass validation bacause of too long text",
+			mock:     func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {},
+			comment:  model.Comment{Text: fixedLengthString(5001)},
+			expError: ErrTextIsTooLong,
 		},
 	}
 
@@ -314,13 +317,12 @@ func TestCommentService_Validate(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			tr := mock_store.NewMockTaskRepository(c)
-			cr := mock_store.NewMockCommentRepository(c)
-			tc.mock(tr, cr, tc.comment)
-			s := NewCommentService(tr, cr)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.comment)
+			s := newCommentService(store)
 
 			err := s.Validate(tc.comment)
-			assert.Equal(t, tc.expectedError, err)
+			assert.Equal(t, tc.expError, err)
 		})
 	}
 }

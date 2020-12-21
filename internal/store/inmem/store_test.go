@@ -1,4 +1,4 @@
-package memory
+package inmem
 
 import (
 	"testing"
@@ -12,8 +12,7 @@ func TestStore_Open(t *testing.T) {
 
 func TestStore_Close(t *testing.T) {
 	s := NewStore()
-	err := s.Open()
+	s.Open()
 
-	assert.NoError(t, err)
 	assert.NoError(t, s.Close())
 }

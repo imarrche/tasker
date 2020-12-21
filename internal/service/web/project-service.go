@@ -4,24 +4,22 @@ import (
 	"sort"
 
 	"github.com/imarrche/tasker/internal/model"
-	"github.com/imarrche/tasker/internal/service"
 	"github.com/imarrche/tasker/internal/store"
 )
 
-// ProjectService is a web project service.
-type ProjectService struct {
-	projectRepo store.ProjectRepository
-	columnRepo  store.ColumnRepository
+// projectService is the web project service.
+type projectService struct {
+	store store.Store
 }
 
-// NewProjectService creates and returns a new ProjectService instance.
-func NewProjectService(pr store.ProjectRepository, cr store.ColumnRepository) service.ProjectService {
-	return &ProjectService{projectRepo: pr, columnRepo: cr}
+// newProjectService creates and returns a new projectService instance.
+func newProjectService(s store.Store) *projectService {
+	return &projectService{store: s}
 }
 
 // GetAll returns all projects sorted alphabetically by name.
-func (s *ProjectService) GetAll() ([]model.Project, error) {
-	ps, err := s.projectRepo.GetAll()
+func (s *projectService) GetAll() ([]model.Project, error) {
+	ps, err := s.store.Projects().GetAll()
 	if err != nil {
 		return nil, err
 	}
@@ -34,17 +32,19 @@ func (s *ProjectService) GetAll() ([]model.Project, error) {
 }
 
 // Create creates a new project.
-func (s *ProjectService) Create(p model.Project) (model.Project, error) {
+func (s *projectService) Create(p model.Project) (model.Project, error) {
 	if err := s.Validate(p); err != nil {
 		return model.Project{}, err
 	}
 
-	p, err := s.projectRepo.Create(p)
+	p, err := s.store.Projects().Create(p)
 	if err != nil {
 		return model.Project{}, err
 	}
 
-	_, err = s.columnRepo.Create(model.Column{Name: "default", Project: p})
+	_, err = s.store.Columns().Create(
+		model.Column{Name: "default", Index: 1, ProjectID: p.ID},
+	)
 	if err != nil {
 		return model.Project{}, err
 	}
@@ -52,23 +52,27 @@ func (s *ProjectService) Create(p model.Project) (model.Project, error) {
 	return p, nil
 }
 
-// GetByID returns project with specific ID.
-func (s *ProjectService) GetByID(id int) (model.Project, error) {
-	return s.projectRepo.GetByID(id)
+// GetByID returns the project with specific ID.
+func (s *projectService) GetByID(id int) (model.Project, error) {
+	return s.store.Projects().GetByID(id)
 }
 
 // Update updates a project.
-func (s *ProjectService) Update(p model.Project) error {
-	return s.projectRepo.Update(p)
+func (s *projectService) Update(p model.Project) error {
+	if err := s.Validate(p); err != nil {
+		return err
+	}
+
+	return s.store.Projects().Update(p)
 }
 
-// DeleteByID deletes a project with specific ID.
-func (s *ProjectService) DeleteByID(id int) error {
-	return s.projectRepo.DeleteByID(id)
+// DeleteByID deletes the project with specific ID.
+func (s *projectService) DeleteByID(id int) error {
+	return s.store.Projects().DeleteByID(id)
 }
 
 // Validate validates a project.
-func (s *ProjectService) Validate(p model.Project) error {
+func (s *projectService) Validate(p model.Project) error {
 	if len(p.Name) == 0 {
 		return ErrNameIsRequired
 	} else if len(p.Name) > 500 {

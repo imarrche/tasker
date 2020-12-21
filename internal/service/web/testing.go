@@ -2,6 +2,7 @@ package web
 
 import "math/rand"
 
+// fixedLengthString returns random string with fixed length.
 func fixedLengthString(length int) string {
 	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 

@@ -1,2 +1,2 @@
-// Package web keeps all web related services.
+// Package web provides web related services.
 package web

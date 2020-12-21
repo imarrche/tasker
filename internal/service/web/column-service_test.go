@@ -1,7 +1,6 @@
 package web
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -12,39 +11,47 @@ import (
 	mock_store "github.com/imarrche/tasker/internal/store/mocks"
 )
 
-func TestColumnService_GetAll(t *testing.T) {
-	testcases := [...]struct {
-		name            string
-		mock            func(*mock_store.MockColumnRepository)
-		expectedColumns []model.Column
-		expectedError   error
+func TestColumnService_GetByProjectID(t *testing.T) {
+	testcases := []struct {
+		name       string
+		mock       func(*mock_store.MockStore, *gomock.Controller, model.Project)
+		project    model.Project
+		expColumns []model.Column
+		expError   error
 	}{
 		{
 			name: "Columns are retrieved and sorted alphabetically",
-			mock: func(cr *mock_store.MockColumnRepository) {
-				cr.EXPECT().GetAll().Return(
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
+				cr := mock_store.NewMockColumnRepo(c)
+
+				cr.EXPECT().GetByProjectID(p.ID).Return(
 					[]model.Column{
-						model.Column{Index: 3},
-						model.Column{Index: 2},
-						model.Column{Index: 1},
+						model.Column{ID: 1, Name: "C1", Index: 3, ProjectID: 1},
+						model.Column{ID: 2, Name: "C2", Index: 2, ProjectID: 1},
+						model.Column{ID: 3, Name: "C3", Index: 1, ProjectID: 1},
 					},
 					nil,
 				)
+				s.EXPECT().Columns().Return(cr)
 			},
-			expectedColumns: []model.Column{
-				model.Column{Index: 1},
-				model.Column{Index: 2},
-				model.Column{Index: 3},
+			project: model.Project{ID: 1, Name: "P"},
+			expColumns: []model.Column{
+				model.Column{ID: 3, Name: "C3", Index: 1, ProjectID: 1},
+				model.Column{ID: 2, Name: "C2", Index: 2, ProjectID: 1},
+				model.Column{ID: 1, Name: "C1", Index: 3, ProjectID: 1},
 			},
-			expectedError: nil,
+			expError: nil,
 		},
 		{
-			name: "Error occured while retrieving columns",
-			mock: func(cr *mock_store.MockColumnRepository) {
-				cr.EXPECT().GetAll().Return(nil, errors.New("couldn't get columns"))
+			name: "Error occures while retrieving columns",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
+				cr := mock_store.NewMockColumnRepo(c)
+
+				cr.EXPECT().GetByProjectID(p.ID).Return(nil, store.ErrDbQuery)
+				s.EXPECT().Columns().Return(cr)
 			},
-			expectedColumns: nil,
-			expectedError:   errors.New("couldn't get columns"),
+			expColumns: nil,
+			expError:   store.ErrDbQuery,
 		},
 	}
 
@@ -53,41 +60,55 @@ func TestColumnService_GetAll(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			cr := mock_store.NewMockColumnRepository(c)
-			tc.mock(cr)
-			s := NewColumnService(cr, nil)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.project)
+			s := newColumnService(store)
 
-			cs, err := s.GetAll()
-			assert.Equal(t, tc.expectedError, err)
-			assert.Equal(t, tc.expectedColumns, cs)
+			cs, err := s.GetByProjectID(tc.project.ID)
+			assert.Equal(t, tc.expError, err)
+			assert.Equal(t, tc.expColumns, cs)
 		})
 	}
 }
 
 func TestColumnService_Create(t *testing.T) {
-	testcases := [...]struct {
-		name           string
-		mock           func(*mock_store.MockColumnRepository, model.Column)
-		column         model.Column
-		expectedColumn model.Column
-		expectedError  error
+	testcases := []struct {
+		name      string
+		mock      func(*mock_store.MockStore, *gomock.Controller, model.Column)
+		column    model.Column
+		expColumn model.Column
+		expError  error
 	}{
 		{
-			name: "Column is created.",
-			mock: func(cr *mock_store.MockColumnRepository, c model.Column) {
-				cr.EXPECT().Create(c).Return(c, nil)
-				cr.EXPECT().GetAllByProjectID(c.Project.ID).Return([]model.Column{}, nil)
+			name: "Column is created",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
+				pr := mock_store.NewMockProjectRepo(c)
+				cr := mock_store.NewMockColumnRepo(c)
+
+				pr.EXPECT().GetByID(column.ProjectID).Return(model.Project{}, nil)
+				cr.EXPECT().GetByProjectID(column.ProjectID).Return([]model.Column{}, nil)
+				cr.EXPECT().Create(column).Return(
+					model.Column{
+						ID:        1,
+						Name:      column.Name,
+						Index:     column.Index,
+						ProjectID: column.ProjectID,
+					},
+					nil,
+				)
+				s.EXPECT().Columns().Times(2).Return(cr)
+				s.EXPECT().Projects().Return(pr)
 			},
-			column:         model.Column{Name: "C1", Project: model.Project{ID: 1}},
-			expectedColumn: model.Column{Name: "C1", Project: model.Project{ID: 1}},
-			expectedError:  nil,
+			column:    model.Column{Name: "C", Index: 1, ProjectID: 1},
+			expColumn: model.Column{ID: 1, Name: "C", Index: 1, ProjectID: 1},
+			expError:  nil,
 		},
 		{
-			name:           "Column didn't pass validation.",
-			mock:           func(cr *mock_store.MockColumnRepository, c model.Column) {},
-			column:         model.Column{Name: ""},
-			expectedColumn: model.Column{},
-			expectedError:  ErrNameIsRequired,
+			name:      "Column doesn't pass validation",
+			mock:      func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {},
+			column:    model.Column{Name: ""},
+			expColumn: model.Column{},
+			expError:  ErrNameIsRequired,
 		},
 	}
 
@@ -96,33 +117,36 @@ func TestColumnService_Create(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			cr := mock_store.NewMockColumnRepository(c)
-			tc.mock(cr, tc.column)
-			s := NewColumnService(cr, nil)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.column)
+			s := newColumnService(store)
 
 			column, err := s.Create(tc.column)
-			assert.Equal(t, tc.expectedError, err)
-			assert.Equal(t, tc.expectedColumn, column)
+			assert.Equal(t, tc.expError, err)
+			assert.Equal(t, tc.expColumn, column)
 		})
 	}
 }
 
 func TestColumnService_GetByID(t *testing.T) {
-	testcases := [...]struct {
-		name           string
-		mock           func(*mock_store.MockColumnRepository, model.Column)
-		column         model.Column
-		expectedColumn model.Column
-		expectedError  error
+	testcases := []struct {
+		name      string
+		mock      func(*mock_store.MockStore, *gomock.Controller, model.Column)
+		column    model.Column
+		expColumn model.Column
+		expError  error
 	}{
 		{
-			name: "Column is retrieved by ID.",
-			mock: func(cr *mock_store.MockColumnRepository, c model.Column) {
-				cr.EXPECT().GetByID(c.ID).Return(c, nil)
+			name: "Column is retrieved",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
+				cr := mock_store.NewMockColumnRepo(c)
+
+				cr.EXPECT().GetByID(column.ID).Return(column, nil)
+				s.EXPECT().Columns().Return(cr)
 			},
-			column:         model.Column{ID: 1},
-			expectedColumn: model.Column{ID: 1},
-			expectedError:  nil,
+			column:    model.Column{ID: 1, Name: "C", Index: 1, ProjectID: 1},
+			expColumn: model.Column{ID: 1, Name: "C", Index: 1, ProjectID: 1},
+			expError:  nil,
 		},
 	}
 
@@ -131,42 +155,42 @@ func TestColumnService_GetByID(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			cr := mock_store.NewMockColumnRepository(c)
-			tc.mock(cr, tc.column)
-			s := NewColumnService(cr, nil)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.column)
+			s := newColumnService(store)
 
 			column, err := s.GetByID(tc.column.ID)
-			assert.Equal(t, tc.expectedError, err)
-			assert.Equal(t, tc.expectedColumn, column)
+			assert.Equal(t, tc.expError, err)
+			assert.Equal(t, tc.expColumn, column)
 		})
 	}
 }
 
 func TestColumnService_Update(t *testing.T) {
-	testcases := [...]struct {
-		name           string
-		mock           func(*mock_store.MockColumnRepository, model.Column)
-		column         model.Column
-		expectedColumn model.Column
-		expectedError  error
+	testcases := []struct {
+		name      string
+		mock      func(*mock_store.MockStore, *gomock.Controller, model.Column)
+		column    model.Column
+		expColumn model.Column
+		expError  error
 	}{
 		{
-			name: "Column is updated.",
-			mock: func(cr *mock_store.MockColumnRepository, c model.Column) {
-				cr.EXPECT().Update(c).Return(nil)
-				cr.EXPECT().GetAllByProjectID(c.Project.ID).Return(
-					[]model.Column{},
-					nil,
-				)
+			name: "Column is updated",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
+				cr := mock_store.NewMockColumnRepo(c)
+
+				cr.EXPECT().GetByProjectID(column.ProjectID).Return([]model.Column{}, nil)
+				cr.EXPECT().Update(column).Return(nil)
+				s.EXPECT().Columns().Times(2).Return(cr)
 			},
-			column:        model.Column{Name: "C1", Project: model.Project{ID: 1}},
-			expectedError: nil,
+			column:   model.Column{ID: 1, Name: "C", Index: 1, ProjectID: 1},
+			expError: nil,
 		},
 		{
-			name:          "Column didn't pass validation.",
-			mock:          func(cr *mock_store.MockColumnRepository, c model.Column) {},
-			column:        model.Column{},
-			expectedError: ErrNameIsRequired,
+			name:     "Column doesn't pass validation",
+			mock:     func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {},
+			column:   model.Column{ID: 1},
+			expError: ErrNameIsRequired,
 		},
 	}
 
@@ -175,107 +199,116 @@ func TestColumnService_Update(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			cr := mock_store.NewMockColumnRepository(c)
-			tc.mock(cr, tc.column)
-			s := NewColumnService(cr, nil)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.column)
+			s := newColumnService(store)
 
 			err := s.Update(tc.column)
-			assert.Equal(t, tc.expectedError, err)
+			assert.Equal(t, tc.expError, err)
+		})
+	}
+}
+
+func TestColumnService_MoveByID(t *testing.T) {
+	testcases := []struct {
+		name     string
+		mock     func(*mock_store.MockStore, *gomock.Controller, model.Column)
+		column   model.Column
+		left     bool
+		expError error
+	}{
+		{
+			name: "Column is moved left",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
+				cr := mock_store.NewMockColumnRepo(c)
+
+				cr.EXPECT().GetByID(column.ID).Return(column, nil)
+				cr.EXPECT().GetByIndexAndProjectID(column.Index-1, column.ProjectID).Return(
+					model.Column{ID: 1, Index: 1},
+					nil,
+				)
+				cr.EXPECT().Update(model.Column{ID: 2, Index: 1}).Return(nil)
+				cr.EXPECT().Update(model.Column{ID: 1, Index: 2}).Return(nil)
+				s.EXPECT().Columns().Times(4).Return(cr)
+			},
+			column:   model.Column{ID: 2, Index: 2},
+			left:     true,
+			expError: nil,
+		},
+		{
+			name: "Column is moved right",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
+				cr := mock_store.NewMockColumnRepo(c)
+
+				cr.EXPECT().GetByID(column.ID).Return(column, nil)
+				cr.EXPECT().GetByIndexAndProjectID(column.Index+1, column.ProjectID).Return(
+					model.Column{ID: 2, Index: 2},
+					nil,
+				)
+				cr.EXPECT().Update(model.Column{ID: 1, Index: 2}).Return(nil)
+				cr.EXPECT().Update(model.Column{ID: 2, Index: 1}).Return(nil)
+				s.EXPECT().Columns().Times(4).Return(cr)
+			},
+			column:   model.Column{ID: 1, Index: 1},
+			left:     false,
+			expError: nil,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.column)
+			s := newColumnService(store)
+
+			err := s.MoveByID(tc.column.ID, tc.left)
+			assert.Equal(t, tc.expError, err)
 		})
 	}
 }
 
 func TestColumnService_DeleteByID(t *testing.T) {
-	testcases := [...]struct {
-		name string
-		mock func(
-			*mock_store.MockColumnRepository,
-			*mock_store.MockTaskRepository,
-			model.Column,
-		)
-		column        model.Column
-		expectedError error
+	testcases := []struct {
+		name     string
+		mock     func(*mock_store.MockStore, *gomock.Controller, model.Column)
+		column   model.Column
+		expError error
 	}{
 		{
-			name: "Column is deleted.",
-			mock: func(
-				cr *mock_store.MockColumnRepository,
-				tr *mock_store.MockTaskRepository,
-				c model.Column,
-			) {
-				cr.EXPECT().GetByID(c.ID).Return(c, nil)
-				cr.EXPECT().GetAllByProjectID(c.Project.ID).Return(
-					[]model.Column{model.Column{Name: "C1"}, model.Column{Name: "C2"}},
+			name: "Column is deleted",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
+				cr := mock_store.NewMockColumnRepo(c)
+				tr := mock_store.NewMockTaskRepo(c)
+
+				cr.EXPECT().GetByID(column.ID).Return(column, nil)
+				cr.EXPECT().GetByProjectID(column.ProjectID).Return(
+					[]model.Column{
+						model.Column{ID: 1, Name: "C", Index: 1, ProjectID: 1},
+						model.Column{ID: 2, Name: "C", Index: 2, ProjectID: 1},
+					},
 					nil,
 				)
-				tr.EXPECT().GetAllByColumnID(c.ID).Return([]model.Task{}, nil)
-				cr.EXPECT().DeleteByID(c.ID).Return(nil)
-			},
-			column:        model.Column{ID: 1, Name: "C1", Project: model.Project{ID: 1}},
-			expectedError: nil,
-		},
-		{
-			name: "Column was not found.",
-			mock: func(
-				cr *mock_store.MockColumnRepository,
-				tr *mock_store.MockTaskRepository,
-				c model.Column,
-			) {
-				cr.EXPECT().GetByID(c.ID).Return(model.Column{}, store.ErrNotFound)
-			},
-			column:        model.Column{ID: 1, Name: "C1"},
-			expectedError: store.ErrNotFound,
-		},
-		{
-			name: "Error occured while retrieving all project's columns.",
-			mock: func(
-				cr *mock_store.MockColumnRepository,
-				tr *mock_store.MockTaskRepository,
-				c model.Column,
-			) {
-				cr.EXPECT().GetByID(c.ID).Return(c, nil)
-				cr.EXPECT().GetAllByProjectID(c.Project.ID).Return(
-					[]model.Column{},
-					errors.New("couldn't get columns"),
-				)
-			},
-			column:        model.Column{ID: 1, Name: "C1"},
-			expectedError: errors.New("couldn't get columns"),
-		},
-		{
-			name: "Error occured while deleting last column.",
-			mock: func(
-				cr *mock_store.MockColumnRepository,
-				tr *mock_store.MockTaskRepository,
-				c model.Column,
-			) {
-				cr.EXPECT().GetByID(c.ID).Return(c, nil)
-				cr.EXPECT().GetAllByProjectID(c.Project.ID).Return(
-					[]model.Column{model.Column{ID: 1, Name: "C1"}},
+				tr.EXPECT().GetByColumnID(1).Return(
+					[]model.Task{model.Task{ID: 1, Index: 1, ColumnID: 1}},
 					nil,
 				)
-			},
-			column:        model.Column{ID: 1, Name: "C1"},
-			expectedError: ErrLastColumn,
-		},
-		{
-			name: "Error occured while retrieving all column's tasks.",
-			mock: func(
-				cr *mock_store.MockColumnRepository,
-				tr *mock_store.MockTaskRepository,
-				c model.Column,
-			) {
-				cr.EXPECT().GetByID(c.ID).Return(c, nil)
-				cr.EXPECT().GetAllByProjectID(c.Project.ID).Return(
-					[]model.Column{model.Column{Name: "C1"}, model.Column{Name: "C2"}},
+				tr.EXPECT().GetByColumnID(2).Return(
+					[]model.Task{model.Task{ID: 2, Index: 1, ColumnID: 2}},
 					nil,
 				)
-				tr.EXPECT().GetAllByColumnID(c.ID).Return(
-					[]model.Task{}, errors.New("couldn't get tasks"),
-				)
+				tr.EXPECT().Update(model.Task{ID: 1, Index: 2, ColumnID: 2}).Return(nil)
+				cr.EXPECT().DeleteByID(column.ID).Return(nil)
+				cr.EXPECT().Update(
+					model.Column{ID: 2, Name: "C", Index: 1, ProjectID: 1},
+				).Return(nil)
+				s.EXPECT().Columns().Times(4).Return(cr)
+				s.EXPECT().Tasks().Times(3).Return(tr)
 			},
-			column:        model.Column{ID: 1, Name: "C1"},
-			expectedError: errors.New("couldn't get tasks"),
+			column:   model.Column{ID: 1, Name: "C", Index: 1, ProjectID: 1},
+			expError: nil,
 		},
 	}
 
@@ -284,69 +317,73 @@ func TestColumnService_DeleteByID(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			cr := mock_store.NewMockColumnRepository(c)
-			tr := mock_store.NewMockTaskRepository(c)
-			tc.mock(cr, tr, tc.column)
-			s := NewColumnService(cr, tr)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.column)
+			s := newColumnService(store)
 
 			err := s.DeleteByID(tc.column.ID)
-			assert.Equal(t, tc.expectedError, err)
+			assert.Equal(t, tc.expError, err)
 		})
 	}
 }
 
-func TestColumnService_Validaete(t *testing.T) {
-	testcases := [...]struct {
-		name          string
-		mock          func(*mock_store.MockColumnRepository, model.Column)
-		column        model.Column
-		expectedError error
+func TestColumnService_Validate(t *testing.T) {
+	testcases := []struct {
+		name     string
+		mock     func(*mock_store.MockStore, *gomock.Controller, model.Column)
+		column   model.Column
+		expError error
 	}{
 		{
-			name: "Column passes validation.",
-			mock: func(cr *mock_store.MockColumnRepository, c model.Column) {
-				cr.EXPECT().GetAllByProjectID(c.Project.ID).Return([]model.Column{}, nil)
+			name: "Column passes validation",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
+				cr := mock_store.NewMockColumnRepo(c)
+
+				cr.EXPECT().GetByProjectID(column.ProjectID).Return([]model.Column{}, nil)
+				s.EXPECT().Columns().Return(cr)
 			},
-			column:        model.Column{Name: "C1", Project: model.Project{ID: 1}},
-			expectedError: nil,
+			column:   model.Column{Name: "C1", ProjectID: 1},
+			expError: nil,
 		},
 		{
-			name:          "Column name is not provided.",
-			mock:          func(cr *mock_store.MockColumnRepository, c model.Column) {},
-			column:        model.Column{Name: "", Project: model.Project{ID: 1}},
-			expectedError: ErrNameIsRequired,
+			name:     "Column doesn't pass validation because of empty name",
+			mock:     func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {},
+			column:   model.Column{Name: ""},
+			expError: ErrNameIsRequired,
 		},
 		{
-			name:          "Column name is too long.",
-			mock:          func(cr *mock_store.MockColumnRepository, c model.Column) {},
-			column:        model.Column{Name: fixedLengthString(256), Project: model.Project{ID: 1}},
-			expectedError: ErrNameIsTooLong,
+			name:     "Column doesn't pass validation because of too long name",
+			mock:     func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {},
+			column:   model.Column{Name: fixedLengthString(256)},
+			expError: ErrNameIsTooLong,
 		},
 		{
-			name:          "Column project is not provided.",
-			mock:          func(cr *mock_store.MockColumnRepository, c model.Column) {},
-			column:        model.Column{Name: "C1"},
-			expectedError: ErrProjectIsRequired,
-		},
-		{
-			name: "Error occures while retrieving all project's columns.",
-			mock: func(cr *mock_store.MockColumnRepository, c model.Column) {
-				cr.EXPECT().GetAllByProjectID(c.Project.ID).Return(
-					[]model.Column{}, errors.New("couldn't get columns"),
+			name: "Column doesn't pass validation because of invalid project ID",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
+				cr := mock_store.NewMockColumnRepo(c)
+
+				cr.EXPECT().GetByProjectID(column.ProjectID).Return(
+					[]model.Column{},
+					store.ErrDbQuery,
 				)
+				s.EXPECT().Columns().Return(cr)
 			},
-			column:        model.Column{Name: "C1", Project: model.Project{ID: 1}},
-			expectedError: errors.New("couldn't get columns"),
+			column:   model.Column{Name: "C1", ProjectID: 1},
+			expError: store.ErrDbQuery,
 		},
 		{
-			name: "Column with this name already exists.",
-			mock: func(cr *mock_store.MockColumnRepository, c model.Column) {
-				cr.EXPECT().GetAllByProjectID(c.Project.ID).Return(
-					[]model.Column{model.Column{Name: "C1"}}, nil,
+			name: "Column doesn't pass validation because column with this name exists",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
+				cr := mock_store.NewMockColumnRepo(c)
+
+				cr.EXPECT().GetByProjectID(column.ProjectID).Return(
+					[]model.Column{model.Column{ID: 1, Name: "C", ProjectID: column.ProjectID}},
+					nil,
 				)
+				s.EXPECT().Columns().Return(cr)
 			},
-			column:        model.Column{Name: "C1", Project: model.Project{ID: 1}},
-			expectedError: ErrColumnAlreadyExists,
+			column:   model.Column{Name: "C", ProjectID: 1},
+			expError: ErrColumnAlreadyExists,
 		},
 	}
 
@@ -355,12 +392,12 @@ func TestColumnService_Validaete(t *testing.T) {
 			c := gomock.NewController(t)
 			defer c.Finish()
 
-			cr := mock_store.NewMockColumnRepository(c)
-			tc.mock(cr, tc.column)
-			s := NewColumnService(cr, nil)
+			store := mock_store.NewMockStore(c)
+			tc.mock(store, c, tc.column)
+			s := newColumnService(store)
 
 			err := s.Validate(tc.column)
-			assert.Equal(t, tc.expectedError, err)
+			assert.Equal(t, tc.expError, err)
 		})
 	}
 }

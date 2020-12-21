@@ -4,24 +4,22 @@ import (
 	"sort"
 
 	"github.com/imarrche/tasker/internal/model"
-	"github.com/imarrche/tasker/internal/service"
 	"github.com/imarrche/tasker/internal/store"
 )
 
-// CommentService is a web comment service.
-type CommentService struct {
-	taskRepo    store.TaskRepository
-	commentRepo store.CommentRepository
+// commentService is the web comment service.
+type commentService struct {
+	store store.Store
 }
 
-// NewCommentService creates and returns a new CommentService instance.
-func NewCommentService(tr store.TaskRepository, cr store.CommentRepository) service.CommentService {
-	return &CommentService{taskRepo: tr, commentRepo: cr}
+// newCommentService creates and returns a new commentService instance.
+func newCommentService(s store.Store) *commentService {
+	return &commentService{store: s}
 }
 
-// GetAll returns all comments sorted by creating date(from newest to oldest).
-func (s *CommentService) GetAll() ([]model.Comment, error) {
-	cs, err := s.commentRepo.GetAll()
+// GetByTaskID returns all comments with specific task ID sorted by creation time.
+func (s *commentService) GetByTaskID(id int) ([]model.Comment, error) {
+	cs, err := s.store.Comments().GetByTaskID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -34,43 +32,42 @@ func (s *CommentService) GetAll() ([]model.Comment, error) {
 }
 
 // Create creates a new comment.
-func (s *CommentService) Create(c model.Comment) (model.Comment, error) {
+func (s *commentService) Create(c model.Comment) (model.Comment, error) {
 	if err := s.Validate(c); err != nil {
 		return model.Comment{}, err
 	}
+	if _, err := s.store.Tasks().GetByID(c.TaskID); err != nil {
+		return model.Comment{}, err
+	}
 
-	return s.commentRepo.Create(c)
+	return s.store.Comments().Create(c)
 }
 
-// GetByID returns comment with specific ID.
-func (s *CommentService) GetByID(id int) (model.Comment, error) {
-	return s.commentRepo.GetByID(id)
+// GetByID returns the comment with specific ID.
+func (s *commentService) GetByID(id int) (model.Comment, error) {
+	return s.store.Comments().GetByID(id)
 }
 
 // Update updates a comment.
-func (s *CommentService) Update(c model.Comment) error {
+func (s *commentService) Update(c model.Comment) error {
 	if err := s.Validate(c); err != nil {
 		return err
 	}
 
-	return s.commentRepo.Update(c)
+	return s.store.Comments().Update(c)
 }
 
-// DeleteByID deletes a comment with specific ID.
-func (s *CommentService) DeleteByID(id int) error {
-	return s.commentRepo.DeleteByID(id)
+// DeleteByID deletes the comment with specific ID.
+func (s *commentService) DeleteByID(id int) error {
+	return s.store.Comments().DeleteByID(id)
 }
 
 // Validate validates a comment.
-func (s *CommentService) Validate(c model.Comment) error {
+func (s *commentService) Validate(c model.Comment) error {
 	if len(c.Text) == 0 {
 		return ErrTextIsRequired
 	} else if len(c.Text) > 5000 {
 		return ErrTextIsTooLong
-	}
-
-	if _, err := s.taskRepo.GetByID(c.Task.ID); err != nil {
-		return ErrInvalidTask
 	}
 
 	return nil

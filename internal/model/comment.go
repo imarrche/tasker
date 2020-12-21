@@ -7,5 +7,5 @@ type Comment struct {
 	ID        int
 	Text      string
 	CreatedAt time.Time
-	Task      Task
+	TaskID    int
 }
