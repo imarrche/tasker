@@ -1,8 +1,8 @@
 // Package main is Tasker entry point.
 package main
 
-import "fmt"
+import "github.com/imarrche/tasker/internal/api"
 
 func main() {
-	fmt.Println("Tasker")
+	api.NewServer().Start()
 }
