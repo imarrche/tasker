@@ -19,7 +19,7 @@ type ProjectRepo interface {
 	GetAll() ([]model.Project, error)
 	Create(model.Project) (model.Project, error)
 	GetByID(int) (model.Project, error)
-	Update(model.Project) error
+	Update(model.Project) (model.Project, error)
 	DeleteByID(int) error
 }
 

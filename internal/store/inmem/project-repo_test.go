@@ -42,11 +42,12 @@ func TestProjectRepository_GetByID(t *testing.T) {
 func TestProjectRepository_Update(t *testing.T) {
 	s := TestStoreWithFixtures()
 
-	err1 := s.Projects().Update(model.Project{ID: 1, Name: "Updated project 1"})
-	err2 := s.Projects().Update(model.Project{ID: 3})
+	p1, err1 := s.Projects().Update(model.Project{ID: 1, Name: "Updated project 1"})
+	_, err2 := s.Projects().Update(model.Project{ID: 3})
 
 	assert.NoError(t, err1)
-	assert.Equal(t, "Updated project 1", s.db.projects[1].Name)
+	assert.Equal(t, model.Project{ID: 1, Name: "Updated project 1"}, p1)
+	assert.Equal(t, "Updated project 1", p1.Name)
 	assert.Equal(t, store.ErrNotFound, err2)
 }
 

@@ -204,38 +204,42 @@ func TestProjectService_GetByID(t *testing.T) {
 
 func TestProjectService_Update(t *testing.T) {
 	testcases := []struct {
-		name     string
-		mock     func(*mock_store.MockStore, *gomock.Controller, model.Project)
-		project  model.Project
-		expError error
+		name       string
+		mock       func(*mock_store.MockStore, *gomock.Controller, model.Project)
+		project    model.Project
+		expProject model.Project
+		expError   error
 	}{
 		{
 			name: "Project is updated",
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
 				pr := mock_store.NewMockProjectRepo(c)
 
-				pr.EXPECT().Update(p).Return(nil)
+				pr.EXPECT().Update(p).Return(p, nil)
 				s.EXPECT().Projects().Return(pr)
 			},
-			project:  model.Project{ID: 1, Name: "P"},
-			expError: nil,
+			project:    model.Project{ID: 1, Name: "P"},
+			expProject: model.Project{ID: 1, Name: "P"},
+			expError:   nil,
 		},
 		{
-			name:     "Project doesn't pass validation",
-			mock:     func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {},
-			project:  model.Project{Name: ""},
-			expError: ErrNameIsRequired,
+			name:       "Project doesn't pass validation",
+			mock:       func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {},
+			project:    model.Project{Name: ""},
+			expProject: model.Project{},
+			expError:   ErrNameIsRequired,
 		},
 		{
 			name: "Error occured while updating project.",
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
 				pr := mock_store.NewMockProjectRepo(c)
 
-				pr.EXPECT().Update(p).Return(store.ErrDbQuery)
+				pr.EXPECT().Update(p).Return(model.Project{}, store.ErrDbQuery)
 				s.EXPECT().Projects().Return(pr)
 			},
-			project:  model.Project{ID: 1, Name: "P"},
-			expError: store.ErrDbQuery,
+			project:    model.Project{ID: 1, Name: "P"},
+			expProject: model.Project{},
+			expError:   store.ErrDbQuery,
 		},
 	}
 
@@ -248,8 +252,9 @@ func TestProjectService_Update(t *testing.T) {
 			tc.mock(store, c, tc.project)
 			s := newProjectService(store)
 
-			err := s.Update(tc.project)
+			p, err := s.Update(tc.project)
 			assert.Equal(t, tc.expError, err)
+			assert.Equal(t, tc.expProject, p)
 		})
 	}
 }

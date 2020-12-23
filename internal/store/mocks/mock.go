@@ -187,11 +187,12 @@ func (mr *MockProjectRepoMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
 }
 
 // Update mocks base method
-func (m *MockProjectRepo) Update(arg0 model.Project) error {
+func (m *MockProjectRepo) Update(arg0 model.Project) (model.Project, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(model.Project)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update

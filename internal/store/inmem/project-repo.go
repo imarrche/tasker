@@ -19,15 +19,16 @@ func newProjectRepo(db *inMemoryDb) *projectRepo {
 }
 
 // GetAll returns all projects.
-func (r *projectRepo) GetAll() (projects []model.Project, err error) {
+func (r *projectRepo) GetAll() ([]model.Project, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
 
+	ps := []model.Project{}
 	for _, p := range r.db.projects {
-		projects = append(projects, p)
+		ps = append(ps, p)
 	}
 
-	return projects, err
+	return ps, nil
 }
 
 // Create creates and returns a new project.
@@ -54,7 +55,7 @@ func (r *projectRepo) GetByID(id int) (model.Project, error) {
 }
 
 // Update updates the project.
-func (r *projectRepo) Update(p model.Project) error {
+func (r *projectRepo) Update(p model.Project) (model.Project, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
@@ -62,10 +63,11 @@ func (r *projectRepo) Update(p model.Project) error {
 		project.Name = p.Name
 		project.Description = p.Description
 		r.db.projects[project.ID] = project
-		return nil
+
+		return project, nil
 	}
 
-	return store.ErrNotFound
+	return model.Project{}, store.ErrNotFound
 }
 
 // DeleteByID deletes the project with specific ID.
