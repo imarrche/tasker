@@ -103,9 +103,9 @@ func TestServer_HandleProjectDetail(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodGet, "projects/id", nil)
+			r, _ := http.NewRequest(http.MethodGet, "projects/project_id", nil)
 			r = mux.SetURLVars(r, map[string]string{
-				"id": "1",
+				"project_id": "1",
 			})
 
 			s.handleProjectDetail().ServeHTTP(w, r)
@@ -141,9 +141,9 @@ func TestServer_HandleProjectUpdate(t *testing.T) {
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.project)
-			r, _ := http.NewRequest(http.MethodPut, "projects/id", b)
+			r, _ := http.NewRequest(http.MethodPut, "projects/project_id", b)
 			r = mux.SetURLVars(r, map[string]string{
-				"id": "1",
+				"project_id": "1",
 			})
 
 			s.handleProjectUpdate().ServeHTTP(w, r)
@@ -175,9 +175,9 @@ func TestServer_HandleProjectDelete(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodDelete, "projects/id", nil)
+			r, _ := http.NewRequest(http.MethodDelete, "projects/project_id", nil)
 			r = mux.SetURLVars(r, map[string]string{
-				"id": "1",
+				"project_id": "1",
 			})
 
 			s.handleProjectDelete().ServeHTTP(w, r)

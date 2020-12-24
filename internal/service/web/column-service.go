@@ -50,9 +50,9 @@ func (s *columnService) GetByID(id int) (model.Column, error) {
 }
 
 // Update updates a column.
-func (s *columnService) Update(c model.Column) error {
+func (s *columnService) Update(c model.Column) (model.Column, error) {
 	if err := s.Validate(c); err != nil {
-		return err
+		return model.Column{}, err
 	}
 
 	return s.store.Columns().Update(c)
@@ -81,11 +81,12 @@ func (s *columnService) MoveByID(id int, left bool) error {
 		c.Index++
 		nextColumn.Index--
 	}
-	if err = s.store.Columns().Update(nextColumn); err != nil {
+	if _, err = s.store.Columns().Update(nextColumn); err != nil {
 		return err
 	}
 
-	return s.store.Columns().Update(c)
+	_, err = s.store.Columns().Update(c)
+	return err
 }
 
 // DeleteByID deletes the column with specific ID.
@@ -134,7 +135,7 @@ func (s *columnService) DeleteByID(id int) error {
 	for _, column := range cs {
 		if column.Index > c.Index {
 			column.Index--
-			if err = s.store.Columns().Update(column); err != nil {
+			if _, err = s.store.Columns().Update(column); err != nil {
 				return err
 			}
 		}

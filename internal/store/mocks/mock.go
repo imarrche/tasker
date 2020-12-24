@@ -299,11 +299,12 @@ func (mr *MockColumnRepoMockRecorder) GetByIndexAndProjectID(arg0, arg1 interfac
 }
 
 // Update mocks base method
-func (m *MockColumnRepo) Update(arg0 model.Column) error {
+func (m *MockColumnRepo) Update(arg0 model.Column) (model.Column, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(model.Column)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update

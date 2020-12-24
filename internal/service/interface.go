@@ -25,7 +25,7 @@ type ColumnService interface {
 	GetByProjectID(int) ([]model.Column, error)
 	Create(model.Column) (model.Column, error)
 	GetByID(int) (model.Column, error)
-	Update(model.Column) error
+	Update(model.Column) (model.Column, error)
 	MoveByID(int, bool) error
 	DeleteByID(int) error
 	Validate(model.Column) error

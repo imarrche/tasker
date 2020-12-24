@@ -29,7 +29,7 @@ type ColumnRepo interface {
 	Create(model.Column) (model.Column, error)
 	GetByID(int) (model.Column, error)
 	GetByIndexAndProjectID(int, int) (model.Column, error)
-	Update(model.Column) error
+	Update(model.Column) (model.Column, error)
 	DeleteByID(int) error
 }
 

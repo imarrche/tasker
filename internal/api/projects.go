@@ -13,10 +13,10 @@ import (
 
 func (s *Server) handleProjectList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var ps []model.Project
 		ps, err := s.service.Projects().GetAll()
 		if err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
+			return
 		}
 
 		s.respond(w, r, http.StatusOK, ps)
@@ -52,7 +52,7 @@ func (s *Server) handleProjectCreate() http.HandlerFunc {
 
 func (s *Server) handleProjectDetail() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(mux.Vars(r)["id"])
+		id, err := strconv.Atoi(mux.Vars(r)["project_id"])
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, nil)
 			return
@@ -79,7 +79,7 @@ func (s *Server) handleProjectUpdate() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(mux.Vars(r)["id"])
+		id, err := strconv.Atoi(mux.Vars(r)["project_id"])
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, nil)
 			return
@@ -108,7 +108,7 @@ func (s *Server) handleProjectUpdate() http.HandlerFunc {
 
 func (s *Server) handleProjectDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.Atoi(mux.Vars(r)["id"])
+		id, err := strconv.Atoi(mux.Vars(r)["project_id"])
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, nil)
 			return
