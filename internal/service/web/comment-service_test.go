@@ -221,17 +221,19 @@ func TestCommentService_Update(t *testing.T) {
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {
 				cr := mock_store.NewMockCommentRepo(c)
 
-				cr.EXPECT().Update(comment).Return(nil)
+				cr.EXPECT().Update(comment).Return(comment, nil)
 				s.EXPECT().Comments().Return(cr)
 			},
-			comment:  model.Comment{ID: 1, Text: "C", TaskID: 1},
-			expError: nil,
+			comment:    model.Comment{ID: 1, Text: "C", TaskID: 1},
+			expComment: model.Comment{ID: 1, Text: "C", TaskID: 1},
+			expError:   nil,
 		},
 		{
-			name:     "Comment doesn't pass validation.",
-			mock:     func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {},
-			comment:  model.Comment{},
-			expError: ErrTextIsRequired,
+			name:       "Comment doesn't pass validation.",
+			mock:       func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {},
+			comment:    model.Comment{},
+			expComment: model.Comment{},
+			expError:   ErrTextIsRequired,
 		},
 	}
 
@@ -244,7 +246,8 @@ func TestCommentService_Update(t *testing.T) {
 			tc.mock(store, c, tc.comment)
 			s := newCommentService(store)
 
-			err := s.Update(tc.comment)
+			comment, err := s.Update(tc.comment)
+			assert.Equal(t, tc.expComment, comment)
 			assert.Equal(t, tc.expError, err)
 		})
 	}

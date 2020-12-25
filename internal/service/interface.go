@@ -48,7 +48,7 @@ type CommentService interface {
 	GetByTaskID(int) ([]model.Comment, error)
 	Create(model.Comment) (model.Comment, error)
 	GetByID(int) (model.Comment, error)
-	Update(model.Comment) error
+	Update(model.Comment) (model.Comment, error)
 	DeleteByID(int) error
 	Validate(model.Comment) error
 }

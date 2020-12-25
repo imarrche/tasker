@@ -45,8 +45,7 @@ func TestServer_CommentList(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expCode, w.Code)
-			assert.Equal(t, tc.expBody[0].ID, cs[0].ID)
-			assert.Equal(t, tc.expBody[1].ID, cs[1].ID)
+			assert.Equal(t, len(tc.expBody), len(cs))
 		})
 	}
 }
@@ -61,7 +60,7 @@ func TestServer_CommentCreate(t *testing.T) {
 		expBody model.Comment
 	}{
 		{
-			name:    "Ok, comment list is created",
+			name:    "Ok, comment is created",
 			comment: model.Comment{Text: "Comment"},
 			expCode: http.StatusCreated,
 			expBody: model.Comment{Text: "Comment"},
@@ -85,6 +84,106 @@ func TestServer_CommentCreate(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expCode, w.Code)
 			assert.Equal(t, tc.expBody.Text, c.Text)
+		})
+	}
+}
+
+func TestServer_CommentDetail(t *testing.T) {
+	s := NewServer(inmem.TestStoreWithFixtures())
+
+	testcases := []struct {
+		name    string
+		expCode int
+		expBody model.Comment
+	}{
+		{
+			name:    "Ok, comment is retrieved",
+			expCode: http.StatusOK,
+			expBody: model.Comment{Text: "Comment 1"},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			r, _ := http.NewRequest(http.MethodPost, "comments/comment_id", nil)
+			r = mux.SetURLVars(r, map[string]string{
+				"comment_id": "1",
+			})
+
+			s.commentDetail().ServeHTTP(w, r)
+			var c model.Comment
+			err := json.NewDecoder(w.Body).Decode(&c)
+
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expCode, w.Code)
+			assert.Equal(t, tc.expBody.Text, c.Text)
+		})
+	}
+}
+
+func TestServer_CommentUpdate(t *testing.T) {
+	s := NewServer(inmem.TestStoreWithFixtures())
+
+	testcases := []struct {
+		name    string
+		comment model.Comment
+		expCode int
+		expBody model.Comment
+	}{
+		{
+			name:    "Ok, comment is updated",
+			comment: model.Comment{Text: "Updated comment"},
+			expCode: http.StatusOK,
+			expBody: model.Comment{Text: "Updated comment"},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			b := &bytes.Buffer{}
+			json.NewEncoder(b).Encode(tc.comment)
+			r, _ := http.NewRequest(http.MethodPut, "comments/comment_id", b)
+			r = mux.SetURLVars(r, map[string]string{
+				"comment_id": "1",
+			})
+
+			s.commentUpdate().ServeHTTP(w, r)
+			var c model.Comment
+			err := json.NewDecoder(w.Body).Decode(&c)
+
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expCode, w.Code)
+			assert.Equal(t, tc.expBody.Text, c.Text)
+		})
+	}
+}
+
+func TestServer_CommentDelete(t *testing.T) {
+	s := NewServer(inmem.TestStoreWithFixtures())
+
+	testcases := []struct {
+		name    string
+		expCode int
+	}{
+		{
+			name:    "Ok, comment is deleted",
+			expCode: http.StatusNoContent,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			r, _ := http.NewRequest(http.MethodDelete, "comments/comment_id", nil)
+			r = mux.SetURLVars(r, map[string]string{
+				"comment_id": "1",
+			})
+
+			s.commentDelete().ServeHTTP(w, r)
+
+			assert.Equal(t, tc.expCode, w.Code)
 		})
 	}
 }

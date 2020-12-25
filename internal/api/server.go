@@ -96,6 +96,11 @@ func (s *Server) configureRouter() {
 	tasks.HandleFunc("/{task_id:[0-9]+}", s.taskDelete()).Methods("DELETE")
 	tasks.HandleFunc("/{task_id:[0-9]+}/comments", s.commentList()).Methods("GET")
 	tasks.HandleFunc("/{task_id:[0-9]+}/comments", s.commentCreate()).Methods("POST")
+
+	comments := s.router.PathPrefix("/comments").Subrouter()
+	comments.HandleFunc("/{comment_id:[0-9]+}", s.commentDetail()).Methods("GET")
+	comments.HandleFunc("/{comment_id:[0-9]+}", s.commentUpdate()).Methods("PUT")
+	comments.HandleFunc("/{comment_id:[0-9]+}", s.commentDelete()).Methods("DELETE")
 }
 
 func (s *Server) respond(w http.ResponseWriter, r *http.Request, code int, data interface{}) {

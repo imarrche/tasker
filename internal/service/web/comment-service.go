@@ -49,9 +49,9 @@ func (s *commentService) GetByID(id int) (model.Comment, error) {
 }
 
 // Update updates a comment.
-func (s *commentService) Update(c model.Comment) error {
+func (s *commentService) Update(c model.Comment) (model.Comment, error) {
 	if err := s.Validate(c); err != nil {
-		return err
+		return model.Comment{}, err
 	}
 
 	return s.store.Comments().Update(c)

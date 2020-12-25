@@ -508,11 +508,12 @@ func (mr *MockCommentRepoMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
 }
 
 // Update mocks base method
-func (m *MockCommentRepo) Update(arg0 model.Comment) error {
+func (m *MockCommentRepo) Update(arg0 model.Comment) (model.Comment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(model.Comment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update
