@@ -39,7 +39,7 @@ type TaskRepo interface {
 	Create(model.Task) (model.Task, error)
 	GetByID(int) (model.Task, error)
 	GetByIndexAndColumnID(int, int) (model.Task, error)
-	Update(model.Task) error
+	Update(model.Task) (model.Task, error)
 	DeleteByID(int) error
 }
 

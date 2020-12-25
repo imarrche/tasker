@@ -314,7 +314,10 @@ func TestColumnService_DeleteByID(t *testing.T) {
 					[]model.Task{model.Task{ID: 2, Index: 1, ColumnID: 2}},
 					nil,
 				)
-				tr.EXPECT().Update(model.Task{ID: 1, Index: 2, ColumnID: 2}).Return(nil)
+				tr.EXPECT().Update(model.Task{ID: 1, Index: 2, ColumnID: 2}).Return(
+					model.Task{ID: 1, Index: 2, ColumnID: 2},
+					nil,
+				)
 				cr.EXPECT().DeleteByID(column.ID).Return(nil)
 				cr.EXPECT().Update(
 					model.Column{ID: 2, Name: "C", Index: 1, ProjectID: 1},

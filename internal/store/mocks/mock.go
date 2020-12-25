@@ -411,11 +411,12 @@ func (mr *MockTaskRepoMockRecorder) GetByIndexAndColumnID(arg0, arg1 interface{}
 }
 
 // Update mocks base method
-func (m *MockTaskRepo) Update(arg0 model.Task) error {
+func (m *MockTaskRepo) Update(arg0 model.Task) (model.Task, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(model.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update

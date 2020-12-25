@@ -87,6 +87,15 @@ func (s *Server) configureRouter() {
 	columns.HandleFunc("/{column_id:[0-9]+}", s.columnDelete()).Methods("DELETE")
 	columns.HandleFunc("/{column_id:[0-9]+}/tasks", s.taskList()).Methods("GET")
 	columns.HandleFunc("/{column_id:[0-9]+}/tasks", s.taskCreate()).Methods("POST")
+
+	tasks := s.router.PathPrefix("/tasks").Subrouter()
+	tasks.HandleFunc("/{task_id:[0-9]+}", s.taskDetail()).Methods("GET")
+	tasks.HandleFunc("/{task_id:[0-9]+}/movex", s.taskMoveX()).Methods("POST")
+	tasks.HandleFunc("/{task_id:[0-9]+}/movey", s.taskMoveY()).Methods("POST")
+	tasks.HandleFunc("/{task_id:[0-9]+}", s.taskUpdate()).Methods("PUT")
+	tasks.HandleFunc("/{task_id:[0-9]+}", s.taskDelete()).Methods("DELETE")
+	tasks.HandleFunc("/{task_id:[0-9]+}/comments", s.commentList()).Methods("GET")
+	tasks.HandleFunc("/{task_id:[0-9]+}/comments", s.commentCreate()).Methods("POST")
 }
 
 func (s *Server) respond(w http.ResponseWriter, r *http.Request, code int, data interface{}) {

@@ -36,7 +36,7 @@ type TaskService interface {
 	GetByColumnID(int) ([]model.Task, error)
 	Create(model.Task) (model.Task, error)
 	GetByID(int) (model.Task, error)
-	Update(model.Task) error
+	Update(model.Task) (model.Task, error)
 	MoveToColumnByID(int, bool) error
 	MoveByID(int, bool) error
 	DeleteByID(int) error

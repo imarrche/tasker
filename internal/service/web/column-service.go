@@ -126,7 +126,7 @@ func (s *columnService) DeleteByID(id int) error {
 	for _, t := range tasks {
 		t.ColumnID = nextColumn.ID
 		t.Index = nextIdx
-		if err = s.store.Tasks().Update(t); err != nil {
+		if _, err = s.store.Tasks().Update(t); err != nil {
 			return err
 		}
 		nextIdx++
