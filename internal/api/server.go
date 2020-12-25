@@ -71,20 +71,22 @@ func (s *Server) Start() {
 }
 
 func (s *Server) configureRouter() {
-	projectRouter := s.router.PathPrefix("/projects").Subrouter()
-	projectRouter.HandleFunc("", s.handleProjectList()).Methods("GET")
-	projectRouter.HandleFunc("", s.handleProjectCreate()).Methods("POST")
-	projectRouter.HandleFunc("/{project_id:[0-9]+}", s.handleProjectDetail()).Methods("GET")
-	projectRouter.HandleFunc("/{project_id:[0-9]+}", s.handleProjectUpdate()).Methods("PUT")
-	projectRouter.HandleFunc("/{project_id:[0-9]+}", s.handleProjectDelete()).Methods("DELETE")
+	projects := s.router.PathPrefix("/projects").Subrouter()
+	projects.HandleFunc("", s.projectList()).Methods("GET")
+	projects.HandleFunc("", s.projectCreate()).Methods("POST")
+	projects.HandleFunc("/{project_id:[0-9]+}", s.projectDetail()).Methods("GET")
+	projects.HandleFunc("/{project_id:[0-9]+}", s.projectUpdate()).Methods("PUT")
+	projects.HandleFunc("/{project_id:[0-9]+}", s.projectDelete()).Methods("DELETE")
+	projects.HandleFunc("/{project_id:[0-9]+}/columns", s.columnList()).Methods("GET")
+	projects.HandleFunc("/{project_id:[0-9]+}/columns", s.columnCreate()).Methods("POST")
 
-	columnRouter := projectRouter.PathPrefix("/{project_id:[0-9]+}/columns").Subrouter()
-	columnRouter.HandleFunc("", s.handleColumnList()).Methods("GET")
-	columnRouter.HandleFunc("", s.handleColumnCreate()).Methods("POST")
-	columnRouter.HandleFunc("/{column_id:[0-9]+}", s.handleColumnDetail()).Methods("GET")
-	columnRouter.HandleFunc("/{column_id:[0-9]+}/move", s.handleColumnMove()).Methods("GET")
-	columnRouter.HandleFunc("/{column_id:[0-9]+}", s.handleColumnUpdate()).Methods("PUT")
-	columnRouter.HandleFunc("/{column_id:[0-9]+}", s.handleColumnDelete()).Methods("DELETE")
+	columns := s.router.PathPrefix("/columns").Subrouter()
+	columns.HandleFunc("/{column_id:[0-9]+}", s.columnDetail()).Methods("GET")
+	columns.HandleFunc("/{column_id:[0-9]+}/move", s.columnMove()).Methods("POST")
+	columns.HandleFunc("/{column_id:[0-9]+}", s.columnUpdate()).Methods("PUT")
+	columns.HandleFunc("/{column_id:[0-9]+}", s.columnDelete()).Methods("DELETE")
+	columns.HandleFunc("/{column_id:[0-9]+}/tasks", s.taskList()).Methods("GET")
+	columns.HandleFunc("/{column_id:[0-9]+}/tasks", s.taskCreate()).Methods("POST")
 }
 
 func (s *Server) respond(w http.ResponseWriter, r *http.Request, code int, data interface{}) {

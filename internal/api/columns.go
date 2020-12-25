@@ -8,10 +8,11 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/imarrche/tasker/internal/model"
+	"github.com/imarrche/tasker/internal/service/web"
 	"github.com/imarrche/tasker/internal/store"
 )
 
-func (s *Server) handleColumnList() http.HandlerFunc {
+func (s *Server) columnList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		projectID, err := strconv.Atoi(mux.Vars(r)["project_id"])
 		if err != nil {
@@ -33,7 +34,7 @@ func (s *Server) handleColumnList() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleColumnCreate() http.HandlerFunc {
+func (s *Server) columnCreate() http.HandlerFunc {
 	type request struct {
 		Name string `json:"name"`
 	}
@@ -65,40 +66,8 @@ func (s *Server) handleColumnCreate() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleColumnDetail() http.HandlerFunc {
+func (s *Server) columnDetail() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		projectID, err := strconv.Atoi(mux.Vars(r)["project_id"])
-		if err != nil {
-			s.error(w, r, http.StatusBadRequest, nil)
-			return
-		}
-		columnID, err := strconv.Atoi(mux.Vars(r)["column_id"])
-		if err != nil {
-			s.error(w, r, http.StatusBadRequest, nil)
-			return
-		}
-
-		c, err := s.service.Columns().GetByID(columnID)
-		if c.ProjectID != projectID {
-			s.error(w, r, http.StatusNotFound, nil)
-			return
-		}
-
-		s.respond(w, r, http.StatusOK, c)
-	}
-}
-
-func (s *Server) handleColumnMove() http.HandlerFunc {
-	type request struct {
-		Left bool `json:"left"`
-	}
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		projectID, err := strconv.Atoi(mux.Vars(r)["project_id"])
-		if err != nil {
-			s.error(w, r, http.StatusBadRequest, nil)
-			return
-		}
 		columnID, err := strconv.Atoi(mux.Vars(r)["column_id"])
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, nil)
@@ -108,14 +77,24 @@ func (s *Server) handleColumnMove() http.HandlerFunc {
 		c, err := s.service.Columns().GetByID(columnID)
 		if err == store.ErrNotFound {
 			s.error(w, r, http.StatusNotFound, nil)
-			return
 		}
 		if err != nil {
 			s.error(w, r, http.StatusInternalServerError, nil)
-			return
 		}
-		if c.ProjectID != projectID {
-			s.error(w, r, http.StatusNotFound, nil)
+
+		s.respond(w, r, http.StatusOK, c)
+	}
+}
+
+func (s *Server) columnMove() http.HandlerFunc {
+	type request struct {
+		Left bool `json:"left"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		columnID, err := strconv.Atoi(mux.Vars(r)["column_id"])
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, nil)
 			return
 		}
 
@@ -135,17 +114,12 @@ func (s *Server) handleColumnMove() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleColumnUpdate() http.HandlerFunc {
+func (s *Server) columnUpdate() http.HandlerFunc {
 	type request struct {
 		Name string `json:"name"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		projectID, err := strconv.Atoi(mux.Vars(r)["project_id"])
-		if err != nil {
-			s.error(w, r, http.StatusBadRequest, nil)
-			return
-		}
 		columnID, err := strconv.Atoi(mux.Vars(r)["column_id"])
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, nil)
@@ -158,13 +132,10 @@ func (s *Server) handleColumnUpdate() http.HandlerFunc {
 			return
 		}
 
-		c, err := s.service.Columns().GetByID(columnID)
-		if c.ProjectID != projectID {
-			s.error(w, r, http.StatusNotFound, err)
-			return
+		c := model.Column{
+			ID:   columnID,
+			Name: request.Name,
 		}
-
-		c.Name = request.Name
 		c, err = s.service.Columns().Update(c)
 		if err != nil {
 			s.error(w, r, http.StatusUnprocessableEntity, err)
@@ -175,35 +146,21 @@ func (s *Server) handleColumnUpdate() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleColumnDelete() http.HandlerFunc {
+func (s *Server) columnDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		projectID, err := strconv.Atoi(mux.Vars(r)["project_id"])
-		if err != nil {
-			s.error(w, r, http.StatusBadRequest, nil)
-			return
-		}
 		columnID, err := strconv.Atoi(mux.Vars(r)["column_id"])
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, nil)
 			return
 		}
 
-		c, err := s.service.Columns().GetByID(columnID)
-		if err == store.ErrNotFound {
-			s.error(w, r, http.StatusNotFound, nil)
-			return
-		}
-		if err != nil {
+		err = s.service.Columns().DeleteByID(columnID)
+		if err == web.ErrLastColumn {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
-		if c.ProjectID != projectID {
-			s.error(w, r, http.StatusNotFound, nil)
-			return
-		}
-		if err = s.service.Columns().DeleteByID(c.ID); err != nil {
-			s.error(w, r, http.StatusInternalServerError, nil)
-			return
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, nil)
 		}
 
 		s.respond(w, r, http.StatusNoContent, nil)

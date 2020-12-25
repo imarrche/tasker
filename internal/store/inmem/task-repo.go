@@ -33,15 +33,21 @@ func (r *taskRepo) GetByColumnID(id int) (tasks []model.Task, err error) {
 }
 
 // Create creates and returns a new task.
-func (r *taskRepo) Create(t model.Task) (model.Task, error) {
+func (r *taskRepo) Create(task model.Task) (model.Task, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	t.ID = len(r.db.tasks) + 1
-	t.Index = len(r.db.tasks) + 1
-	r.db.tasks[t.ID] = t
+	task.ID = len(r.db.tasks) + 1
+	maxIdx := 0
+	for _, t := range r.db.tasks {
+		if t.ColumnID == task.ColumnID && maxIdx < t.Index {
+			maxIdx = t.Index
+		}
+	}
+	task.Index = maxIdx + 1
+	r.db.tasks[task.ID] = task
 
-	return t, nil
+	return task, nil
 }
 
 // GetByID returns the task with specific ID.

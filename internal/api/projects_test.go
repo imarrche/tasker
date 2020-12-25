@@ -14,7 +14,7 @@ import (
 	"github.com/imarrche/tasker/internal/store/inmem"
 )
 
-func TestServer_HandleProjectList(t *testing.T) {
+func TestServer_ProjectList(t *testing.T) {
 	s := NewServer(inmem.TestStoreWithFixtures())
 
 	testcases := []struct {
@@ -37,7 +37,7 @@ func TestServer_HandleProjectList(t *testing.T) {
 			w := httptest.NewRecorder()
 			r, _ := http.NewRequest(http.MethodGet, "/projects", nil)
 
-			s.handleProjectList().ServeHTTP(w, r)
+			s.projectList().ServeHTTP(w, r)
 			var ps []model.Project
 			err := json.NewDecoder(w.Body).Decode(&ps)
 
@@ -48,7 +48,7 @@ func TestServer_HandleProjectList(t *testing.T) {
 	}
 }
 
-func TestServer_HandleProjectCreate(t *testing.T) {
+func TestServer_ProjectCreate(t *testing.T) {
 	s := NewServer(inmem.TestStoreWithFixtures())
 
 	testcases := []struct {
@@ -72,7 +72,7 @@ func TestServer_HandleProjectCreate(t *testing.T) {
 			json.NewEncoder(b).Encode(tc.project)
 			r, _ := http.NewRequest(http.MethodPost, "/projects", b)
 
-			s.handleProjectCreate().ServeHTTP(w, r)
+			s.projectCreate().ServeHTTP(w, r)
 			var p model.Project
 			err := json.NewDecoder(w.Body).Decode(&p)
 
@@ -83,7 +83,7 @@ func TestServer_HandleProjectCreate(t *testing.T) {
 	}
 }
 
-func TestServer_HandleProjectDetail(t *testing.T) {
+func TestServer_ProjectDetail(t *testing.T) {
 	s := NewServer(inmem.TestStoreWithFixtures())
 
 	testcases := []struct {
@@ -108,7 +108,7 @@ func TestServer_HandleProjectDetail(t *testing.T) {
 				"project_id": "1",
 			})
 
-			s.handleProjectDetail().ServeHTTP(w, r)
+			s.projectDetail().ServeHTTP(w, r)
 			var p model.Project
 			err := json.NewDecoder(w.Body).Decode(&p)
 
@@ -119,7 +119,7 @@ func TestServer_HandleProjectDetail(t *testing.T) {
 	}
 }
 
-func TestServer_HandleProjectUpdate(t *testing.T) {
+func TestServer_ProjectUpdate(t *testing.T) {
 	s := NewServer(inmem.TestStoreWithFixtures())
 
 	testcases := []struct {
@@ -146,7 +146,7 @@ func TestServer_HandleProjectUpdate(t *testing.T) {
 				"project_id": "1",
 			})
 
-			s.handleProjectUpdate().ServeHTTP(w, r)
+			s.projectUpdate().ServeHTTP(w, r)
 			var p model.Project
 			err := json.NewDecoder(w.Body).Decode(&p)
 
@@ -157,7 +157,7 @@ func TestServer_HandleProjectUpdate(t *testing.T) {
 	}
 }
 
-func TestServer_HandleProjectDelete(t *testing.T) {
+func TestServer_ProjectDelete(t *testing.T) {
 	s := NewServer(inmem.TestStoreWithFixtures())
 
 	testcases := []struct {
@@ -180,7 +180,7 @@ func TestServer_HandleProjectDelete(t *testing.T) {
 				"project_id": "1",
 			})
 
-			s.handleProjectDelete().ServeHTTP(w, r)
+			s.projectDelete().ServeHTTP(w, r)
 
 			assert.Equal(t, tc.expCode, w.Code)
 		})

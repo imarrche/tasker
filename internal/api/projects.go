@@ -11,7 +11,7 @@ import (
 	"github.com/imarrche/tasker/internal/store"
 )
 
-func (s *Server) handleProjectList() http.HandlerFunc {
+func (s *Server) projectList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ps, err := s.service.Projects().GetAll()
 		if err != nil {
@@ -23,7 +23,7 @@ func (s *Server) handleProjectList() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleProjectCreate() http.HandlerFunc {
+func (s *Server) projectCreate() http.HandlerFunc {
 	type request struct {
 		Name        string `json:"name"`
 		Description string `json:"description"`
@@ -50,7 +50,7 @@ func (s *Server) handleProjectCreate() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleProjectDetail() http.HandlerFunc {
+func (s *Server) projectDetail() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(mux.Vars(r)["project_id"])
 		if err != nil {
@@ -72,7 +72,7 @@ func (s *Server) handleProjectDetail() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleProjectUpdate() http.HandlerFunc {
+func (s *Server) projectUpdate() http.HandlerFunc {
 	type request struct {
 		Name        string `json:"name"`
 		Description string `json:"description"`
@@ -106,7 +106,7 @@ func (s *Server) handleProjectUpdate() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleProjectDelete() http.HandlerFunc {
+func (s *Server) projectDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(mux.Vars(r)["project_id"])
 		if err != nil {
