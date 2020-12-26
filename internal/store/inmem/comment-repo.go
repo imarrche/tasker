@@ -58,17 +58,17 @@ func (r *commentRepo) GetByID(id int) (model.Comment, error) {
 }
 
 // Update updates a comment.
-func (r *commentRepo) Update(c model.Comment) error {
+func (r *commentRepo) Update(c model.Comment) (model.Comment, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
 	if comment, ok := r.db.comments[c.ID]; ok {
 		comment.Text = c.Text
 		r.db.comments[comment.ID] = comment
-		return nil
+		return comment, nil
 	}
 
-	return store.ErrNotFound
+	return model.Comment{}, store.ErrNotFound
 }
 
 // DeleteByID deletes the comment with specific ID.

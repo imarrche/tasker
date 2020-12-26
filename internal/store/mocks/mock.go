@@ -187,11 +187,12 @@ func (mr *MockProjectRepoMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
 }
 
 // Update mocks base method
-func (m *MockProjectRepo) Update(arg0 model.Project) error {
+func (m *MockProjectRepo) Update(arg0 model.Project) (model.Project, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(model.Project)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update
@@ -298,11 +299,12 @@ func (mr *MockColumnRepoMockRecorder) GetByIndexAndProjectID(arg0, arg1 interfac
 }
 
 // Update mocks base method
-func (m *MockColumnRepo) Update(arg0 model.Column) error {
+func (m *MockColumnRepo) Update(arg0 model.Column) (model.Column, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(model.Column)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update
@@ -409,11 +411,12 @@ func (mr *MockTaskRepoMockRecorder) GetByIndexAndColumnID(arg0, arg1 interface{}
 }
 
 // Update mocks base method
-func (m *MockTaskRepo) Update(arg0 model.Task) error {
+func (m *MockTaskRepo) Update(arg0 model.Task) (model.Task, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(model.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update
@@ -505,11 +508,12 @@ func (mr *MockCommentRepoMockRecorder) GetByID(arg0 interface{}) *gomock.Call {
 }
 
 // Update mocks base method
-func (m *MockCommentRepo) Update(arg0 model.Comment) error {
+func (m *MockCommentRepo) Update(arg0 model.Comment) (model.Comment, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(model.Comment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Update indicates an expected call of Update

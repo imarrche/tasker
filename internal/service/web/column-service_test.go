@@ -180,17 +180,19 @@ func TestColumnService_Update(t *testing.T) {
 				cr := mock_store.NewMockColumnRepo(c)
 
 				cr.EXPECT().GetByProjectID(column.ProjectID).Return([]model.Column{}, nil)
-				cr.EXPECT().Update(column).Return(nil)
+				cr.EXPECT().Update(column).Return(column, nil)
 				s.EXPECT().Columns().Times(2).Return(cr)
 			},
-			column:   model.Column{ID: 1, Name: "C", Index: 1, ProjectID: 1},
-			expError: nil,
+			column:    model.Column{ID: 1, Name: "C", Index: 1, ProjectID: 1},
+			expColumn: model.Column{ID: 1, Name: "C", Index: 1, ProjectID: 1},
+			expError:  nil,
 		},
 		{
-			name:     "Column doesn't pass validation",
-			mock:     func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {},
-			column:   model.Column{ID: 1},
-			expError: ErrNameIsRequired,
+			name:      "Column doesn't pass validation",
+			mock:      func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {},
+			column:    model.Column{ID: 1},
+			expColumn: model.Column{},
+			expError:  ErrNameIsRequired,
 		},
 	}
 
@@ -203,8 +205,9 @@ func TestColumnService_Update(t *testing.T) {
 			tc.mock(store, c, tc.column)
 			s := newColumnService(store)
 
-			err := s.Update(tc.column)
+			column, err := s.Update(tc.column)
 			assert.Equal(t, tc.expError, err)
+			assert.Equal(t, tc.expColumn, column)
 		})
 	}
 }
@@ -227,8 +230,14 @@ func TestColumnService_MoveByID(t *testing.T) {
 					model.Column{ID: 1, Index: 1},
 					nil,
 				)
-				cr.EXPECT().Update(model.Column{ID: 2, Index: 1}).Return(nil)
-				cr.EXPECT().Update(model.Column{ID: 1, Index: 2}).Return(nil)
+				cr.EXPECT().Update(model.Column{ID: 2, Index: 1}).Return(
+					model.Column{ID: 2, Index: 1},
+					nil,
+				)
+				cr.EXPECT().Update(model.Column{ID: 1, Index: 2}).Return(
+					model.Column{ID: 1, Index: 2},
+					nil,
+				)
 				s.EXPECT().Columns().Times(4).Return(cr)
 			},
 			column:   model.Column{ID: 2, Index: 2},
@@ -245,8 +254,14 @@ func TestColumnService_MoveByID(t *testing.T) {
 					model.Column{ID: 2, Index: 2},
 					nil,
 				)
-				cr.EXPECT().Update(model.Column{ID: 1, Index: 2}).Return(nil)
-				cr.EXPECT().Update(model.Column{ID: 2, Index: 1}).Return(nil)
+				cr.EXPECT().Update(model.Column{ID: 1, Index: 2}).Return(
+					model.Column{ID: 1, Index: 2},
+					nil,
+				)
+				cr.EXPECT().Update(model.Column{ID: 2, Index: 1}).Return(
+					model.Column{ID: 2, Index: 1},
+					nil,
+				)
 				s.EXPECT().Columns().Times(4).Return(cr)
 			},
 			column:   model.Column{ID: 1, Index: 1},
@@ -299,11 +314,17 @@ func TestColumnService_DeleteByID(t *testing.T) {
 					[]model.Task{model.Task{ID: 2, Index: 1, ColumnID: 2}},
 					nil,
 				)
-				tr.EXPECT().Update(model.Task{ID: 1, Index: 2, ColumnID: 2}).Return(nil)
+				tr.EXPECT().Update(model.Task{ID: 1, Index: 2, ColumnID: 2}).Return(
+					model.Task{ID: 1, Index: 2, ColumnID: 2},
+					nil,
+				)
 				cr.EXPECT().DeleteByID(column.ID).Return(nil)
 				cr.EXPECT().Update(
 					model.Column{ID: 2, Name: "C", Index: 1, ProjectID: 1},
-				).Return(nil)
+				).Return(
+					model.Column{ID: 2, Name: "C", Index: 1, ProjectID: 1},
+					nil,
+				)
 				s.EXPECT().Columns().Times(4).Return(cr)
 				s.EXPECT().Tasks().Times(3).Return(tr)
 			},

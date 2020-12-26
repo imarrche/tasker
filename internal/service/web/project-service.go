@@ -58,9 +58,9 @@ func (s *projectService) GetByID(id int) (model.Project, error) {
 }
 
 // Update updates a project.
-func (s *projectService) Update(p model.Project) error {
+func (s *projectService) Update(p model.Project) (model.Project, error) {
 	if err := s.Validate(p); err != nil {
-		return err
+		return model.Project{}, err
 	}
 
 	return s.store.Projects().Update(p)

@@ -53,11 +53,11 @@ func TestColumnRepo_GetByIndexAndProjectID(t *testing.T) {
 func TestColumnRepo_Update(t *testing.T) {
 	s := TestStoreWithFixtures()
 
-	err1 := s.Columns().Update(model.Column{ID: 1, Name: "Updated column 1"})
-	err2 := s.Columns().Update(model.Column{ID: 4})
+	c1, err1 := s.Columns().Update(model.Column{ID: 1, Name: "Updated column 1"})
+	_, err2 := s.Columns().Update(model.Column{ID: 4})
 
 	assert.NoError(t, err1)
-	assert.Equal(t, "Updated column 1", s.db.columns[1].Name)
+	assert.Equal(t, "Updated column 1", c1.Name)
 	assert.Equal(t, store.ErrNotFound, err2)
 }
 

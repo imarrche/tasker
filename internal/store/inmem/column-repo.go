@@ -33,15 +33,21 @@ func (r *columnRepo) GetByProjectID(id int) (columns []model.Column, err error) 
 }
 
 // Create creates and returns a new column.
-func (r *columnRepo) Create(c model.Column) (model.Column, error) {
+func (r *columnRepo) Create(column model.Column) (model.Column, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	c.ID = len(r.db.columns) + 1
-	c.Index = len(r.db.columns) + 1
-	r.db.columns[c.ID] = c
+	column.ID = len(r.db.columns) + 1
+	maxIdx := 0
+	for _, c := range r.db.columns {
+		if c.ProjectID == column.ProjectID && maxIdx < c.Index {
+			maxIdx = c.Index
+		}
+	}
+	column.Index = maxIdx + 1
+	r.db.columns[column.ID] = column
 
-	return c, nil
+	return column, nil
 }
 
 // GetByID returns the column with specific ID.
@@ -71,17 +77,20 @@ func (r *columnRepo) GetByIndexAndProjectID(index, id int) (model.Column, error)
 }
 
 // Update updates the column.
-func (r *columnRepo) Update(c model.Column) error {
+func (r *columnRepo) Update(c model.Column) (model.Column, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
 	if column, ok := r.db.columns[c.ID]; ok {
 		column.Name = c.Name
+		if c.Index != 0 {
+			column.Index = c.Index
+		}
 		r.db.columns[column.ID] = column
-		return nil
+		return column, nil
 	}
 
-	return store.ErrNotFound
+	return model.Column{}, store.ErrNotFound
 }
 
 // DeleteByID deletes the column with specific ID.

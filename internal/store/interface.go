@@ -19,7 +19,7 @@ type ProjectRepo interface {
 	GetAll() ([]model.Project, error)
 	Create(model.Project) (model.Project, error)
 	GetByID(int) (model.Project, error)
-	Update(model.Project) error
+	Update(model.Project) (model.Project, error)
 	DeleteByID(int) error
 }
 
@@ -29,7 +29,7 @@ type ColumnRepo interface {
 	Create(model.Column) (model.Column, error)
 	GetByID(int) (model.Column, error)
 	GetByIndexAndProjectID(int, int) (model.Column, error)
-	Update(model.Column) error
+	Update(model.Column) (model.Column, error)
 	DeleteByID(int) error
 }
 
@@ -39,7 +39,7 @@ type TaskRepo interface {
 	Create(model.Task) (model.Task, error)
 	GetByID(int) (model.Task, error)
 	GetByIndexAndColumnID(int, int) (model.Task, error)
-	Update(model.Task) error
+	Update(model.Task) (model.Task, error)
 	DeleteByID(int) error
 }
 
@@ -48,6 +48,6 @@ type CommentRepo interface {
 	GetByTaskID(int) ([]model.Comment, error)
 	Create(model.Comment) (model.Comment, error)
 	GetByID(int) (model.Comment, error)
-	Update(model.Comment) error
+	Update(model.Comment) (model.Comment, error)
 	DeleteByID(int) error
 }

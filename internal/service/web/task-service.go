@@ -50,9 +50,9 @@ func (s *taskService) GetByID(id int) (model.Task, error) {
 }
 
 // Update updates a task.
-func (s *taskService) Update(t model.Task) error {
+func (s *taskService) Update(t model.Task) (model.Task, error) {
 	if err := s.Validate(t); err != nil {
-		return err
+		return model.Task{}, err
 	}
 
 	return s.store.Tasks().Update(t)
@@ -88,7 +88,7 @@ func (s *taskService) MoveToColumnByID(id int, left bool) error {
 	for _, task := range tasks {
 		if task.Index > t.Index {
 			task.Index--
-			if err = s.store.Tasks().Update(task); err != nil {
+			if _, err = s.store.Tasks().Update(task); err != nil {
 				return err
 			}
 		}
@@ -96,7 +96,8 @@ func (s *taskService) MoveToColumnByID(id int, left bool) error {
 
 	t.ColumnID = nextColumn.ID
 	t.Index = len(nextColumnTasks) + 1
-	return s.store.Tasks().Update(t)
+	t, err = s.store.Tasks().Update(t)
+	return err
 }
 
 func (s *taskService) MoveByID(id int, up bool) error {
@@ -121,11 +122,12 @@ func (s *taskService) MoveByID(id int, up bool) error {
 		t.Index++
 		nextTask.Index--
 	}
-	if err = s.store.Tasks().Update(nextTask); err != nil {
+	if _, err = s.store.Tasks().Update(nextTask); err != nil {
 		return err
 	}
 
-	return s.store.Tasks().Update(t)
+	_, err = s.store.Tasks().Update(t)
+	return err
 }
 
 // DeleteByID deletes the task with specific ID.
@@ -139,7 +141,7 @@ func (s *taskService) DeleteByID(id int) error {
 	for _, task := range ts {
 		if task.Index > t.Index {
 			task.Index--
-			if err = s.store.Tasks().Update(task); err != nil {
+			if _, err = s.store.Tasks().Update(task); err != nil {
 				return err
 			}
 		}

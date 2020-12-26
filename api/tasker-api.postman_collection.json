@@ -1,0 +1,727 @@
+{
+	"info": {
+		"_postman_id": "d34f44e8-f6b9-4d8f-869a-ec4f9b5ddc8a",
+		"name": "tasker-api",
+		"description": "This is documentation for Tasker REST API service.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "projects",
+			"item": [
+				{
+					"name": "Project list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{HOST}}/api/v1/projects",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects"
+							]
+						},
+						"description": "Returns a list of all projects. Projects are sorted alphabetically by name."
+					},
+					"response": []
+				},
+				{
+					"name": "Project create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Project 3\",\r\n    \"description\": \"Project description\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/projects",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Project detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{HOST}}/api/v1/projects/1",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1"
+							]
+						},
+						"description": "Returns a signle project by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Project update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Updated name\",\r\n    \"description\": \"Updated description\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/projects/1",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1"
+							]
+						},
+						"description": "Updates a single project by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Project delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{HOST}}/api/v1/projects/1",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1"
+							]
+						},
+						"description": "Deletes a single project by ID."
+					},
+					"response": []
+				}
+			],
+			"description": "Project related endpoints."
+		},
+		{
+			"name": "columns",
+			"item": [
+				{
+					"name": "Column list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{HOST}}/api/v1/projects/1/columns",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1",
+								"columns"
+							]
+						},
+						"description": "Returns a list of all project's columns. Columns are sorted by index from lowest to greatest."
+					},
+					"response": []
+				},
+				{
+					"name": "Column create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Column 3\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/projects/1/columns",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"projects",
+								"1",
+								"columns"
+							]
+						},
+						"description": "Creates column for the project."
+					},
+					"response": []
+				},
+				{
+					"name": "Column detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{HOST}}/api/v1/columns/1",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"columns",
+								"1"
+							]
+						},
+						"description": "Returns a single column by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Column update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Updated column\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/columns/1",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"columns",
+								"1"
+							]
+						},
+						"description": "Updates a single column by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Column move left",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"left\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/columns/2/move",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"columns",
+								"2",
+								"move"
+							]
+						},
+						"description": "Moves column one position left by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Column move right",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"left\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/columns/1/move",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"columns",
+								"1",
+								"move"
+							]
+						},
+						"description": "Moves column one position right by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Column delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{HOST}}/api/v1/columns/1",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"columns",
+								"1"
+							]
+						},
+						"description": "Deletes a single column by ID."
+					},
+					"response": []
+				}
+			],
+			"description": "Column related endpoints."
+		},
+		{
+			"name": "tasks",
+			"item": [
+				{
+					"name": "Task list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{HOST}}/api/v1/columns/1/tasks",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"columns",
+								"1",
+								"tasks"
+							]
+						},
+						"description": "Returns all column's tasks. Tasks are sorted by index from lowest to greatest."
+					},
+					"response": []
+				},
+				{
+					"name": "Task create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Task 3\",\r\n    \"description\": \"New task\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/columns/1/tasks",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"columns",
+								"1",
+								"tasks"
+							]
+						},
+						"description": "Creates task for the column. "
+					},
+					"response": []
+				},
+				{
+					"name": "Task detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{HOST}}/api/v1/tasks/1",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								"1"
+							]
+						},
+						"description": "Returns a single task by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Task update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Updated task\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/tasks/1",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								"1"
+							]
+						},
+						"description": "Updates a single task by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Task move up",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"up\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/tasks/2/movey",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								"2",
+								"movey"
+							]
+						},
+						"description": "Moves task one position up by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Task move down",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"up\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/tasks/1/movey",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								"1",
+								"movey"
+							]
+						},
+						"description": "Moves task one position up by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Task move left",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"left\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/tasks/3/movex",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								"3",
+								"movex"
+							]
+						},
+						"description": "Moves task to column one position left by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Task move right",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"left\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/tasks/1/movex",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								"1",
+								"movex"
+							]
+						},
+						"description": "Moves task to column one position right by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Task delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{HOST}}/api/v1/tasks/1",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								"1"
+							]
+						},
+						"description": "Deletes a single task by ID."
+					},
+					"response": []
+				}
+			],
+			"description": "Task related endpoints."
+		},
+		{
+			"name": "comments",
+			"item": [
+				{
+					"name": "Comment list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{HOST}}/api/v1/tasks/1/comments",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								"1",
+								"comments"
+							]
+						},
+						"description": "Returns all task's comments. Comments are sorted from newest to oldest."
+					},
+					"response": []
+				},
+				{
+					"name": "Comment create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"text\": \"Comment for the task 1.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/tasks/1/comments",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tasks",
+								"1",
+								"comments"
+							]
+						},
+						"description": "Creates comment for the task."
+					},
+					"response": []
+				},
+				{
+					"name": "Comment detail",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/comments/1",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"comments",
+								"1"
+							]
+						},
+						"description": "Returns a single comment by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Comment update",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"text\": \"Updated comment.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{HOST}}/api/v1/comments/1",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"comments",
+								"1"
+							]
+						},
+						"description": "Returns a single comment by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Comment delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{HOST}}/api/v1/comments/1",
+							"host": [
+								"{{HOST}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"comments",
+								"1"
+							]
+						},
+						"description": "Deletes a single comment by ID."
+					},
+					"response": []
+				}
+			],
+			"description": "Comment related endpoints."
+		}
+	]
+}

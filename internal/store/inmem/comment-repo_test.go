@@ -42,11 +42,11 @@ func TestCommentRepo_GetByID(t *testing.T) {
 func TestCommentRepo_Update(t *testing.T) {
 	s := TestStoreWithFixtures()
 
-	err1 := s.Comments().Update(model.Comment{ID: 1, Text: "Updated comment 1"})
-	err2 := s.Comments().Update(model.Comment{ID: 4})
+	c, err1 := s.Comments().Update(model.Comment{ID: 1, Text: "Updated comment 1"})
+	_, err2 := s.Comments().Update(model.Comment{ID: 4})
 
 	assert.NoError(t, err1)
-	assert.Equal(t, "Updated comment 1", s.db.comments[1].Text)
+	assert.Equal(t, "Updated comment 1", c.Text)
 	assert.Equal(t, store.ErrNotFound, err2)
 }
 

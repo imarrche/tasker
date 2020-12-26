@@ -15,7 +15,7 @@ type ProjectService interface {
 	GetAll() ([]model.Project, error)
 	Create(model.Project) (model.Project, error)
 	GetByID(int) (model.Project, error)
-	Update(model.Project) error
+	Update(model.Project) (model.Project, error)
 	DeleteByID(int) error
 	Validate(model.Project) error
 }
@@ -25,7 +25,7 @@ type ColumnService interface {
 	GetByProjectID(int) ([]model.Column, error)
 	Create(model.Column) (model.Column, error)
 	GetByID(int) (model.Column, error)
-	Update(model.Column) error
+	Update(model.Column) (model.Column, error)
 	MoveByID(int, bool) error
 	DeleteByID(int) error
 	Validate(model.Column) error
@@ -36,7 +36,7 @@ type TaskService interface {
 	GetByColumnID(int) ([]model.Task, error)
 	Create(model.Task) (model.Task, error)
 	GetByID(int) (model.Task, error)
-	Update(model.Task) error
+	Update(model.Task) (model.Task, error)
 	MoveToColumnByID(int, bool) error
 	MoveByID(int, bool) error
 	DeleteByID(int) error
@@ -48,7 +48,7 @@ type CommentService interface {
 	GetByTaskID(int) ([]model.Comment, error)
 	Create(model.Comment) (model.Comment, error)
 	GetByID(int) (model.Comment, error)
-	Update(model.Comment) error
+	Update(model.Comment) (model.Comment, error)
 	DeleteByID(int) error
 	Validate(model.Comment) error
 }
