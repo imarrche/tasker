@@ -11,15 +11,17 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"github.com/imarrche/tasker/internal/config"
 	"github.com/imarrche/tasker/internal/service"
 	"github.com/imarrche/tasker/internal/service/web"
 	"github.com/imarrche/tasker/internal/store"
+	"github.com/imarrche/tasker/internal/store/pg"
 )
 
 // Server is the REST API server serving frontends.
 type Server struct {
 	l       *log.Logger
-	config  *Config
+	config  *config.Config
 	router  *mux.Router
 	store   store.Store
 	service service.Service
@@ -28,7 +30,7 @@ type Server struct {
 // NewServer creates a new Server instance.
 func NewServer(store store.Store) *Server {
 	l := log.New(os.Stdout, "", log.LstdFlags)
-	c := NewConfig()     // Reading config fron environment.
+	c := config.New()    // Reading config fron environment.
 	r := mux.NewRouter() // Initializing router.
 	service := web.NewService(store)
 
@@ -41,6 +43,12 @@ func (s *Server) Start() {
 	server := &http.Server{
 		Addr:    s.config.Addr,
 		Handler: s.router,
+	}
+
+	// PostgreSQL.
+	store := pg.New(s.config.PostgreSQL)
+	if err := store.Open(); err != nil {
+		s.l.Fatal(err)
 	}
 
 	// Setting up router.
@@ -67,6 +75,10 @@ func (s *Server) Start() {
 	if err := server.Shutdown(ctx); err != nil {
 		s.l.Fatal("server couldn't gracefully shut down")
 	}
+	if err := store.Close(); err != nil {
+		s.l.Fatal("couldn't disconnect from PostgreSQL")
+	}
+
 	s.l.Println("server shutted down gracefully")
 }
 
