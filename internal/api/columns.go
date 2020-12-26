@@ -155,12 +155,16 @@ func (s *Server) columnDelete() http.HandlerFunc {
 		}
 
 		err = s.service.Columns().DeleteByID(columnID)
+		if err == store.ErrNotFound {
+			s.error(w, r, http.StatusNotFound, nil)
+			return
+		}
 		if err == web.ErrLastColumn {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
 		if err != nil {
-			s.error(w, r, http.StatusBadRequest, nil)
+			s.error(w, r, http.StatusInternalServerError, nil)
 		}
 
 		s.respond(w, r, http.StatusNoContent, nil)

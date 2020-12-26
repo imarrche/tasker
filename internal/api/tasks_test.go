@@ -35,7 +35,7 @@ func TestServer_TaskList(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodGet, "columns/column_id/tasks", nil)
+			r, _ := http.NewRequest(http.MethodGet, "/api/v1/columns/column_id/tasks", nil)
 			r = mux.SetURLVars(r, map[string]string{
 				"column_id": "1",
 			})
@@ -73,7 +73,7 @@ func TestServer_TaskСreate(t *testing.T) {
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.task)
-			r, _ := http.NewRequest(http.MethodPost, "columns/column_id/tasks", b)
+			r, _ := http.NewRequest(http.MethodPost, "/api/v1/columns/column_id/tasks", b)
 			r = mux.SetURLVars(r, map[string]string{
 				"column_id": "1",
 			})
@@ -107,7 +107,7 @@ func TestServer_TaskDetail(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodGet, "tasks/task_id", nil)
+			r, _ := http.NewRequest(http.MethodGet, "/api/v1/tasks/task_id", nil)
 			r = mux.SetURLVars(r, map[string]string{
 				"task_id": "1",
 			})
@@ -152,7 +152,7 @@ func TestServer_TaskMoveX(t *testing.T) {
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(request{Left: tc.left})
-			r, _ := http.NewRequest(http.MethodPost, "tasks/task_id", b)
+			r, _ := http.NewRequest(http.MethodPost, "/api/v1/tasks/task_id", b)
 			r = mux.SetURLVars(r, map[string]string{
 				"task_id": "1",
 			})
@@ -193,7 +193,7 @@ func TestServer_TaskMoveY(t *testing.T) {
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(request{Up: tc.up})
-			r, _ := http.NewRequest(http.MethodPost, "tasks/task_id", b)
+			r, _ := http.NewRequest(http.MethodPost, "/api/v1/tasks/task_id", b)
 			r = mux.SetURLVars(r, map[string]string{
 				"task_id": "1",
 			})
@@ -227,7 +227,7 @@ func TestServer_TaskUpdate(t *testing.T) {
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.task)
-			r, _ := http.NewRequest(http.MethodPut, "tasks/task_id", b)
+			r, _ := http.NewRequest(http.MethodPut, "/api/v1/tasks/task_id", b)
 			r = mux.SetURLVars(r, map[string]string{
 				"task_id": "1",
 			})
@@ -259,7 +259,7 @@ func TestServer_TaskDelete(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodDelete, "tasks/task_id", nil)
+			r, _ := http.NewRequest(http.MethodDelete, "/api/v1/tasks/task_id", nil)
 			r = mux.SetURLVars(r, map[string]string{
 				"task_id": "1",
 			})

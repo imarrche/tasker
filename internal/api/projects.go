@@ -15,7 +15,7 @@ func (s *Server) projectList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ps, err := s.service.Projects().GetAll()
 		if err != nil {
-			s.error(w, r, http.StatusInternalServerError, err)
+			s.error(w, r, http.StatusInternalServerError, nil)
 			return
 		}
 
@@ -64,7 +64,7 @@ func (s *Server) projectDetail() http.HandlerFunc {
 			return
 		}
 		if err != nil {
-			s.error(w, r, http.StatusInternalServerError, err)
+			s.error(w, r, http.StatusInternalServerError, nil)
 			return
 		}
 
@@ -120,7 +120,7 @@ func (s *Server) projectDelete() http.HandlerFunc {
 			return
 		}
 		if err != nil {
-			s.error(w, r, http.StatusInternalServerError, err)
+			s.error(w, r, http.StatusInternalServerError, nil)
 			return
 		}
 

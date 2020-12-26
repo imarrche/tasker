@@ -71,7 +71,9 @@ func (s *Server) Start() {
 }
 
 func (s *Server) configureRouter() {
-	projects := s.router.PathPrefix("/projects").Subrouter()
+	v1Router := s.router.PathPrefix("/api/v1").Subrouter()
+
+	projects := v1Router.PathPrefix("/projects").Subrouter()
 	projects.HandleFunc("", s.projectList()).Methods("GET")
 	projects.HandleFunc("", s.projectCreate()).Methods("POST")
 	projects.HandleFunc("/{project_id:[0-9]+}", s.projectDetail()).Methods("GET")
@@ -80,7 +82,7 @@ func (s *Server) configureRouter() {
 	projects.HandleFunc("/{project_id:[0-9]+}/columns", s.columnList()).Methods("GET")
 	projects.HandleFunc("/{project_id:[0-9]+}/columns", s.columnCreate()).Methods("POST")
 
-	columns := s.router.PathPrefix("/columns").Subrouter()
+	columns := v1Router.PathPrefix("/columns").Subrouter()
 	columns.HandleFunc("/{column_id:[0-9]+}", s.columnDetail()).Methods("GET")
 	columns.HandleFunc("/{column_id:[0-9]+}/move", s.columnMove()).Methods("POST")
 	columns.HandleFunc("/{column_id:[0-9]+}", s.columnUpdate()).Methods("PUT")
@@ -88,7 +90,7 @@ func (s *Server) configureRouter() {
 	columns.HandleFunc("/{column_id:[0-9]+}/tasks", s.taskList()).Methods("GET")
 	columns.HandleFunc("/{column_id:[0-9]+}/tasks", s.taskCreate()).Methods("POST")
 
-	tasks := s.router.PathPrefix("/tasks").Subrouter()
+	tasks := v1Router.PathPrefix("/tasks").Subrouter()
 	tasks.HandleFunc("/{task_id:[0-9]+}", s.taskDetail()).Methods("GET")
 	tasks.HandleFunc("/{task_id:[0-9]+}/movex", s.taskMoveX()).Methods("POST")
 	tasks.HandleFunc("/{task_id:[0-9]+}/movey", s.taskMoveY()).Methods("POST")
@@ -97,7 +99,7 @@ func (s *Server) configureRouter() {
 	tasks.HandleFunc("/{task_id:[0-9]+}/comments", s.commentList()).Methods("GET")
 	tasks.HandleFunc("/{task_id:[0-9]+}/comments", s.commentCreate()).Methods("POST")
 
-	comments := s.router.PathPrefix("/comments").Subrouter()
+	comments := v1Router.PathPrefix("/comments").Subrouter()
 	comments.HandleFunc("/{comment_id:[0-9]+}", s.commentDetail()).Methods("GET")
 	comments.HandleFunc("/{comment_id:[0-9]+}", s.commentUpdate()).Methods("PUT")
 	comments.HandleFunc("/{comment_id:[0-9]+}", s.commentDelete()).Methods("DELETE")

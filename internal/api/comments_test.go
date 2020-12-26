@@ -34,7 +34,7 @@ func TestServer_CommentList(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodGet, "tasks/task_id/comments", nil)
+			r, _ := http.NewRequest(http.MethodGet, "/api/v1/tasks/task_id/comments", nil)
 			r = mux.SetURLVars(r, map[string]string{
 				"task_id": "1",
 			})
@@ -72,7 +72,7 @@ func TestServer_CommentCreate(t *testing.T) {
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.comment)
-			r, _ := http.NewRequest(http.MethodPost, "tasks/task_id/comments", b)
+			r, _ := http.NewRequest(http.MethodPost, "/api/v1/tasks/task_id/comments", b)
 			r = mux.SetURLVars(r, map[string]string{
 				"task_id": "1",
 			})
@@ -106,7 +106,7 @@ func TestServer_CommentDetail(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodPost, "comments/comment_id", nil)
+			r, _ := http.NewRequest(http.MethodPost, "/api/v1/comments/comment_id", nil)
 			r = mux.SetURLVars(r, map[string]string{
 				"comment_id": "1",
 			})
@@ -144,7 +144,7 @@ func TestServer_CommentUpdate(t *testing.T) {
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.comment)
-			r, _ := http.NewRequest(http.MethodPut, "comments/comment_id", b)
+			r, _ := http.NewRequest(http.MethodPut, "/api/v1/comments/comment_id", b)
 			r = mux.SetURLVars(r, map[string]string{
 				"comment_id": "1",
 			})
@@ -176,7 +176,7 @@ func TestServer_CommentDelete(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodDelete, "comments/comment_id", nil)
+			r, _ := http.NewRequest(http.MethodDelete, "/api/v1/comments/comment_id", nil)
 			r = mux.SetURLVars(r, map[string]string{
 				"comment_id": "1",
 			})

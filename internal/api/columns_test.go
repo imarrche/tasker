@@ -35,7 +35,7 @@ func TestServer_ColumnList(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodGet, "projects/project_id/columns", nil)
+			r, _ := http.NewRequest(http.MethodGet, "/api/v1/projects/project_id/columns", nil)
 			r = mux.SetURLVars(r, map[string]string{
 				"project_id": "1",
 			})
@@ -73,7 +73,7 @@ func TestServer_ColumnCreate(t *testing.T) {
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.column)
-			r, _ := http.NewRequest(http.MethodPost, "projects/project_id/columns", b)
+			r, _ := http.NewRequest(http.MethodPost, "/api/v1/projects/project_id/columns", b)
 			r = mux.SetURLVars(r, map[string]string{
 				"project_id": "1",
 			})
@@ -107,8 +107,7 @@ func TestServer_ColumnDetail(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			url := "columns/column_id"
-			r, _ := http.NewRequest(http.MethodGet, url, nil)
+			r, _ := http.NewRequest(http.MethodGet, "/api/v1/columns/column_id", nil)
 			r = mux.SetURLVars(r, map[string]string{
 				"column_id": "1",
 			})
@@ -155,8 +154,7 @@ func TestServer_ColumnMove(t *testing.T) {
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(&request{Left: tc.left})
-			url := "columns/column_id/move"
-			r, _ := http.NewRequest(http.MethodPost, url, b)
+			r, _ := http.NewRequest(http.MethodPost, "/api/v1/columns/column_id/move", b)
 			r = mux.SetURLVars(r, map[string]string{
 				"column_id": tc.id,
 			})
@@ -190,8 +188,7 @@ func TestServer_ColumnUpdate(t *testing.T) {
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.column)
-			url := "columns/column_id"
-			r, _ := http.NewRequest(http.MethodPut, url, b)
+			r, _ := http.NewRequest(http.MethodPut, "/api/v1/columns/column_id", b)
 			r = mux.SetURLVars(r, map[string]string{
 				"column_id": "1",
 			})
@@ -223,8 +220,7 @@ func TestServer_ColumnDelete(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			url := "columns/column_id"
-			r, _ := http.NewRequest(http.MethodDelete, url, nil)
+			r, _ := http.NewRequest(http.MethodDelete, "/api/v1/columns/column_id", nil)
 			r = mux.SetURLVars(r, map[string]string{
 				"column_id": "1",
 			})

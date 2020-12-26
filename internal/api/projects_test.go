@@ -14,7 +14,7 @@ import (
 	"github.com/imarrche/tasker/internal/store/inmem"
 )
 
-func TestServer_ProjectList(t *testing.T) {
+func TestServer_V1ProjectList(t *testing.T) {
 	s := NewServer(inmem.TestStoreWithFixtures())
 
 	testcases := []struct {
@@ -35,7 +35,7 @@ func TestServer_ProjectList(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodGet, "/projects", nil)
+			r, _ := http.NewRequest(http.MethodGet, "/api/v1/projects", nil)
 
 			s.projectList().ServeHTTP(w, r)
 			var ps []model.Project
@@ -48,7 +48,7 @@ func TestServer_ProjectList(t *testing.T) {
 	}
 }
 
-func TestServer_ProjectCreate(t *testing.T) {
+func TestServer_V1ProjectCreate(t *testing.T) {
 	s := NewServer(inmem.TestStoreWithFixtures())
 
 	testcases := []struct {
@@ -70,7 +70,7 @@ func TestServer_ProjectCreate(t *testing.T) {
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.project)
-			r, _ := http.NewRequest(http.MethodPost, "/projects", b)
+			r, _ := http.NewRequest(http.MethodPost, "/api/v1/projects", b)
 
 			s.projectCreate().ServeHTTP(w, r)
 			var p model.Project
@@ -83,7 +83,7 @@ func TestServer_ProjectCreate(t *testing.T) {
 	}
 }
 
-func TestServer_ProjectDetail(t *testing.T) {
+func TestServer_V1ProjectDetail(t *testing.T) {
 	s := NewServer(inmem.TestStoreWithFixtures())
 
 	testcases := []struct {
@@ -103,7 +103,7 @@ func TestServer_ProjectDetail(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodGet, "projects/project_id", nil)
+			r, _ := http.NewRequest(http.MethodGet, "/api/v1/projects/project_id", nil)
 			r = mux.SetURLVars(r, map[string]string{
 				"project_id": "1",
 			})
@@ -119,7 +119,7 @@ func TestServer_ProjectDetail(t *testing.T) {
 	}
 }
 
-func TestServer_ProjectUpdate(t *testing.T) {
+func TestServer_V1ProjectUpdate(t *testing.T) {
 	s := NewServer(inmem.TestStoreWithFixtures())
 
 	testcases := []struct {
@@ -141,7 +141,7 @@ func TestServer_ProjectUpdate(t *testing.T) {
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.project)
-			r, _ := http.NewRequest(http.MethodPut, "projects/project_id", b)
+			r, _ := http.NewRequest(http.MethodPut, "/api/v1/projects/project_id", b)
 			r = mux.SetURLVars(r, map[string]string{
 				"project_id": "1",
 			})
@@ -157,7 +157,7 @@ func TestServer_ProjectUpdate(t *testing.T) {
 	}
 }
 
-func TestServer_ProjectDelete(t *testing.T) {
+func TestServer_V1ProjectDelete(t *testing.T) {
 	s := NewServer(inmem.TestStoreWithFixtures())
 
 	testcases := []struct {
@@ -175,7 +175,7 @@ func TestServer_ProjectDelete(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodDelete, "projects/project_id", nil)
+			r, _ := http.NewRequest(http.MethodDelete, "/api/v1/projects/project_id", nil)
 			r = mux.SetURLVars(r, map[string]string{
 				"project_id": "1",
 			})
