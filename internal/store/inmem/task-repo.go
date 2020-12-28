@@ -38,13 +38,6 @@ func (r *taskRepo) Create(task model.Task) (model.Task, error) {
 	defer r.m.Unlock()
 
 	task.ID = len(r.db.tasks) + 1
-	maxIdx := 0
-	for _, t := range r.db.tasks {
-		if t.ColumnID == task.ColumnID && maxIdx < t.Index {
-			maxIdx = t.Index
-		}
-	}
-	task.Index = maxIdx + 1
 	r.db.tasks[task.ID] = task
 
 	return task, nil

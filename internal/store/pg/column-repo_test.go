@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCommentRepo_GetByProjectID(t *testing.T) {
+func TestColumnRepo_GetByProjectID(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
@@ -65,7 +65,7 @@ func TestColumnRepo_Create(t *testing.T) {
 		expError  error
 	}{
 		{
-			name: "OK, columns are retrieved",
+			name: "OK, column is created",
 			mock: func(c model.Column) {
 				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 				mock.ExpectQuery("INSERT INTO columns (.+) VALUES (.+)").WithArgs(

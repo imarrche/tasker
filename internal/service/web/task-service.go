@@ -37,9 +37,11 @@ func (s *taskService) Create(t model.Task) (model.Task, error) {
 		return model.Task{}, err
 	}
 
-	if _, err := s.store.Columns().GetByID(t.ColumnID); err != nil {
+	ts, err := s.store.Tasks().GetByColumnID(t.ColumnID)
+	if err != nil {
 		return model.Task{}, err
 	}
+	t.Index = len(ts) + 1
 
 	return s.store.Tasks().Create(t)
 }

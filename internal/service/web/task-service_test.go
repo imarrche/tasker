@@ -81,13 +81,9 @@ func TestTaskService_Create(t *testing.T) {
 		{
 			name: "Task is created",
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, t model.Task) {
-				cr := mock_store.NewMockColumnRepo(c)
 				tr := mock_store.NewMockTaskRepo(c)
 
-				cr.EXPECT().GetByID(t.ColumnID).Return(
-					model.Column{ID: t.ColumnID, Name: "C", ProjectID: 1},
-					nil,
-				)
+				tr.EXPECT().GetByColumnID(t.ColumnID).Return([]model.Task{}, nil)
 				tr.EXPECT().Create(t).Return(
 					model.Task{
 						ID:       1,
@@ -97,8 +93,7 @@ func TestTaskService_Create(t *testing.T) {
 					},
 					nil,
 				)
-				s.EXPECT().Columns().Return(cr)
-				s.EXPECT().Tasks().Return(tr)
+				s.EXPECT().Tasks().Times(2).Return(tr)
 			},
 			task:     model.Task{Name: "T", Index: 1, ColumnID: 1},
 			expTask:  model.Task{ID: 1, Name: "T", Index: 1, ColumnID: 1},
