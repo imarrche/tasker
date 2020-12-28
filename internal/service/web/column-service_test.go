@@ -82,11 +82,9 @@ func TestColumnService_Create(t *testing.T) {
 		{
 			name: "Column is created",
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
-				pr := mock_store.NewMockProjectRepo(c)
 				cr := mock_store.NewMockColumnRepo(c)
 
-				pr.EXPECT().GetByID(column.ProjectID).Return(model.Project{}, nil)
-				cr.EXPECT().GetByProjectID(column.ProjectID).Return([]model.Column{}, nil)
+				cr.EXPECT().GetByProjectID(column.ProjectID).Times(2).Return([]model.Column{}, nil)
 				cr.EXPECT().Create(column).Return(
 					model.Column{
 						ID:        1,
@@ -96,8 +94,7 @@ func TestColumnService_Create(t *testing.T) {
 					},
 					nil,
 				)
-				s.EXPECT().Columns().Times(2).Return(cr)
-				s.EXPECT().Projects().Return(pr)
+				s.EXPECT().Columns().Times(3).Return(cr)
 			},
 			column:    model.Column{Name: "C", Index: 1, ProjectID: 1},
 			expColumn: model.Column{ID: 1, Name: "C", Index: 1, ProjectID: 1},

@@ -10,7 +10,7 @@ import (
 	"github.com/imarrche/tasker/internal/model"
 )
 
-func TestCommentRepo_GetAll(t *testing.T) {
+func TestCommentRepo_GetByTaskID(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
@@ -30,7 +30,7 @@ func TestCommentRepo_GetAll(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "text", "created_at", "task_id"}).AddRow(
 					1, "Comment.", time.Now(), 1,
 				)
-				mock.ExpectQuery("SELECT (.+) FROM comments;").WillReturnRows(rows)
+				mock.ExpectQuery("SELECT (.+) FROM comments WHERE task_id = (.+);").WillReturnRows(rows)
 			},
 			expComments: []model.Comment{
 				model.Comment{ID: 1, Text: "Comment."},
@@ -42,7 +42,7 @@ func TestCommentRepo_GetAll(t *testing.T) {
 	for _, tc := range testcases {
 		tc.mock()
 
-		ps, err := r.GetAll()
+		ps, err := r.GetByTaskID(1)
 
 		assert.Equal(t, tc.expError, err)
 		for i := range ps {
@@ -112,7 +112,7 @@ func TestCommentRepo_GetByID(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "text", "created_at", "task_id"}).AddRow(
 					1, "Comment.", time.Now(), 1,
 				)
-				mock.ExpectQuery("SELECT FROM comments WHERE (.+)").WithArgs(
+				mock.ExpectQuery("SELECT FROM comments WHERE (.+);").WithArgs(
 					c.ID,
 				).WillReturnRows(rows)
 			},

@@ -116,9 +116,8 @@ func TestCommentService_Create(t *testing.T) {
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {
 				tr := mock_store.NewMockTaskRepo(c)
 				cr := mock_store.NewMockCommentRepo(c)
-
 				tr.EXPECT().GetByID(comment.TaskID).Return(model.Task{ID: 1}, nil)
-				cr.EXPECT().Create(comment).Return(
+				cr.EXPECT().Create(gomock.Any()).Return(
 					model.Comment{
 						ID:     1,
 						Text:   comment.Text,

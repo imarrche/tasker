@@ -2,6 +2,7 @@ package web
 
 import (
 	"sort"
+	"time"
 
 	"github.com/imarrche/tasker/internal/model"
 	"github.com/imarrche/tasker/internal/store"
@@ -39,6 +40,8 @@ func (s *commentService) Create(c model.Comment) (model.Comment, error) {
 	if _, err := s.store.Tasks().GetByID(c.TaskID); err != nil {
 		return model.Comment{}, err
 	}
+
+	c.CreatedAt = time.Now()
 
 	return s.store.Comments().Create(c)
 }

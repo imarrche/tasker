@@ -2,7 +2,6 @@ package inmem
 
 import (
 	"sync"
-	"time"
 
 	"github.com/imarrche/tasker/internal/model"
 	"github.com/imarrche/tasker/internal/store"
@@ -39,7 +38,6 @@ func (r *commentRepo) Create(c model.Comment) (model.Comment, error) {
 	defer r.m.Unlock()
 
 	c.ID = len(r.db.comments) + 1
-	c.CreatedAt = time.Now()
 	r.db.comments[c.ID] = c
 
 	return c, nil

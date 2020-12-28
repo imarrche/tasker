@@ -16,9 +16,9 @@ func newCommentRepo(db *sql.DB) *commentRepo {
 	return &commentRepo{db: db}
 }
 
-// GetAll returns all comments.
-func (r *commentRepo) GetAll() (cs []model.Comment, err error) {
-	rows, err := r.db.Query("SELECT * FROM comments;")
+// GetByTaskID returns all comments with specific task ID.
+func (r *commentRepo) GetByTaskID(id int) (cs []model.Comment, err error) {
+	rows, err := r.db.Query("SELECT * FROM comments WHERE task_id = $1;", id)
 	if err != nil {
 		return []model.Comment{}, err
 	}

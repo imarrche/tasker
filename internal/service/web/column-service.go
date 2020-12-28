@@ -37,9 +37,11 @@ func (s *columnService) Create(c model.Column) (model.Column, error) {
 		return model.Column{}, err
 	}
 
-	if _, err := s.store.Projects().GetByID(c.ProjectID); err != nil {
+	cs, err := s.store.Columns().GetByProjectID(c.ProjectID)
+	if err != nil {
 		return model.Column{}, err
 	}
+	c.Index = len(cs) + 1
 
 	return s.store.Columns().Create(c)
 }

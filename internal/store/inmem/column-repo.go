@@ -38,13 +38,6 @@ func (r *columnRepo) Create(column model.Column) (model.Column, error) {
 	defer r.m.Unlock()
 
 	column.ID = len(r.db.columns) + 1
-	maxIdx := 0
-	for _, c := range r.db.columns {
-		if c.ProjectID == column.ProjectID && maxIdx < c.Index {
-			maxIdx = c.Index
-		}
-	}
-	column.Index = maxIdx + 1
 	r.db.columns[column.ID] = column
 
 	return column, nil
