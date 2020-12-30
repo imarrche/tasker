@@ -3,6 +3,8 @@ package pg
 import (
 	"database/sql"
 
+	"github.com/imarrche/tasker/internal/store"
+
 	"github.com/imarrche/tasker/internal/model"
 )
 
@@ -58,10 +60,14 @@ func (r *projectRepo) Create(p model.Project) (model.Project, error) {
 // GetByID returns the project with specific ID.
 func (r *projectRepo) GetByID(id int) (model.Project, error) {
 	var p model.Project
-	query := "SELECT FROM projects WHERE id = $1;"
+	query := "SELECT * FROM projects WHERE id = $1;"
 
 	row := r.db.QueryRow(query, id)
-	if err := row.Scan(&p.ID, &p.Name, &p.Description); err != nil {
+	err := row.Scan(&p.ID, &p.Name, &p.Description)
+	if err == sql.ErrNoRows {
+		return model.Project{}, store.ErrNotFound
+	}
+	if err != nil {
 		return model.Project{}, err
 	}
 

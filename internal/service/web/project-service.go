@@ -1,6 +1,7 @@
 package web
 
 import (
+	"database/sql"
 	"sort"
 
 	"github.com/imarrche/tasker/internal/model"
@@ -63,11 +64,27 @@ func (s *projectService) Update(p model.Project) (model.Project, error) {
 		return model.Project{}, err
 	}
 
+	_, err := s.store.Projects().GetByID(p.ID)
+	if err == sql.ErrNoRows {
+		return model.Project{}, store.ErrNotFound
+	}
+	if err != nil {
+		return model.Project{}, err
+	}
+
 	return s.store.Projects().Update(p)
 }
 
 // DeleteByID deletes the project with specific ID.
 func (s *projectService) DeleteByID(id int) error {
+	_, err := s.store.Projects().GetByID(id)
+	if err == sql.ErrNoRows {
+		return store.ErrNotFound
+	}
+	if err != nil {
+		return err
+	}
+
 	return s.store.Projects().DeleteByID(id)
 }
 

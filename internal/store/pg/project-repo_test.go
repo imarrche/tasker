@@ -108,7 +108,7 @@ func TestProjectRepo_GetByID(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "name", "description"}).AddRow(
 					1, "Project 1", "",
 				)
-				mock.ExpectQuery("SELECT FROM projects WHERE (.+)").WithArgs(
+				mock.ExpectQuery("SELECT (.+) FROM projects WHERE (.+)").WithArgs(
 					p.ID,
 				).WillReturnRows(rows)
 			},

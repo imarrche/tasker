@@ -215,8 +215,9 @@ func TestProjectService_Update(t *testing.T) {
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
 				pr := mock_store.NewMockProjectRepo(c)
 
+				pr.EXPECT().GetByID(p.ID).Return(p, nil)
 				pr.EXPECT().Update(p).Return(p, nil)
-				s.EXPECT().Projects().Return(pr)
+				s.EXPECT().Projects().Times(2).Return(pr)
 			},
 			project:    model.Project{ID: 1, Name: "P"},
 			expProject: model.Project{ID: 1, Name: "P"},
@@ -234,8 +235,9 @@ func TestProjectService_Update(t *testing.T) {
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
 				pr := mock_store.NewMockProjectRepo(c)
 
+				pr.EXPECT().GetByID(p.ID).Return(p, nil)
 				pr.EXPECT().Update(p).Return(model.Project{}, store.ErrDbQuery)
-				s.EXPECT().Projects().Return(pr)
+				s.EXPECT().Projects().Times(2).Return(pr)
 			},
 			project:    model.Project{ID: 1, Name: "P"},
 			expProject: model.Project{},
@@ -271,8 +273,9 @@ func TestProjectService_DeleteByID(t *testing.T) {
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
 				pr := mock_store.NewMockProjectRepo(c)
 
+				pr.EXPECT().GetByID(p.ID).Return(p, nil)
 				pr.EXPECT().DeleteByID(p.ID).Return(nil)
-				s.EXPECT().Projects().Return(pr)
+				s.EXPECT().Projects().Times(2).Return(pr)
 			},
 			project:  model.Project{ID: 1, Name: "P"},
 			expError: nil,
@@ -282,8 +285,9 @@ func TestProjectService_DeleteByID(t *testing.T) {
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
 				pr := mock_store.NewMockProjectRepo(c)
 
+				pr.EXPECT().GetByID(p.ID).Return(p, nil)
 				pr.EXPECT().DeleteByID(p.ID).Return(store.ErrDbQuery)
-				s.EXPECT().Projects().Return(pr)
+				s.EXPECT().Projects().Times(2).Return(pr)
 			},
 			project:  model.Project{ID: 1, Name: "P"},
 			expError: store.ErrDbQuery,

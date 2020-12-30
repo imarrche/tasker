@@ -97,6 +97,10 @@ func (s *Server) projectUpdate() http.HandlerFunc {
 			Description: request.Description,
 		}
 		p, err = s.service.Projects().Update(p)
+		if err == store.ErrNotFound {
+			s.error(w, r, http.StatusNotFound, nil)
+			return
+		}
 		if err != nil {
 			s.error(w, r, http.StatusUnprocessableEntity, err)
 			return
