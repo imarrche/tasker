@@ -11,11 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/imarrche/tasker/internal/model"
-	"github.com/imarrche/tasker/internal/store/inmem"
 )
 
 func TestServer_CommentList(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -51,7 +50,7 @@ func TestServer_CommentList(t *testing.T) {
 }
 
 func TestServer_CommentCreate(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -89,7 +88,7 @@ func TestServer_CommentCreate(t *testing.T) {
 }
 
 func TestServer_CommentDetail(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -123,7 +122,7 @@ func TestServer_CommentDetail(t *testing.T) {
 }
 
 func TestServer_CommentUpdate(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -161,7 +160,7 @@ func TestServer_CommentUpdate(t *testing.T) {
 }
 
 func TestServer_CommentDelete(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string

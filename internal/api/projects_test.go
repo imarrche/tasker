@@ -11,11 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/imarrche/tasker/internal/model"
-	"github.com/imarrche/tasker/internal/store/inmem"
 )
 
 func TestServer_V1ProjectList(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -49,7 +48,7 @@ func TestServer_V1ProjectList(t *testing.T) {
 }
 
 func TestServer_V1ProjectCreate(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -84,7 +83,7 @@ func TestServer_V1ProjectCreate(t *testing.T) {
 }
 
 func TestServer_V1ProjectDetail(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -120,7 +119,7 @@ func TestServer_V1ProjectDetail(t *testing.T) {
 }
 
 func TestServer_V1ProjectUpdate(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -158,7 +157,7 @@ func TestServer_V1ProjectUpdate(t *testing.T) {
 }
 
 func TestServer_V1ProjectDelete(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string

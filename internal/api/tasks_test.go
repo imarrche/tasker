@@ -11,11 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/imarrche/tasker/internal/model"
-	"github.com/imarrche/tasker/internal/store/inmem"
 )
 
 func TestServer_TaskList(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -52,7 +51,7 @@ func TestServer_TaskList(t *testing.T) {
 }
 
 func TestServer_TaskСreate(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -90,7 +89,7 @@ func TestServer_TaskСreate(t *testing.T) {
 }
 
 func TestServer_TaskDetail(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -124,7 +123,7 @@ func TestServer_TaskDetail(t *testing.T) {
 }
 
 func TestServer_TaskMoveX(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -165,7 +164,7 @@ func TestServer_TaskMoveX(t *testing.T) {
 }
 
 func TestServer_TaskMoveY(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -206,7 +205,7 @@ func TestServer_TaskMoveY(t *testing.T) {
 }
 
 func TestServer_TaskUpdate(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -244,7 +243,7 @@ func TestServer_TaskUpdate(t *testing.T) {
 }
 
 func TestServer_TaskDelete(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string

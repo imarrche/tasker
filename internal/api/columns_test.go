@@ -11,11 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/imarrche/tasker/internal/model"
-	"github.com/imarrche/tasker/internal/store/inmem"
 )
 
 func TestServer_ColumnList(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -52,7 +51,7 @@ func TestServer_ColumnList(t *testing.T) {
 }
 
 func TestServer_ColumnCreate(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -90,7 +89,7 @@ func TestServer_ColumnCreate(t *testing.T) {
 }
 
 func TestServer_ColumnDetail(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -124,22 +123,21 @@ func TestServer_ColumnDetail(t *testing.T) {
 }
 
 func TestServer_ColumnMove(t *testing.T) {
+	s := NewTestServer()
+
 	testcases := []struct {
 		name    string
 		left    bool
-		id      string
 		expCode int
 	}{
 		{
-			name:    "Ok, column is moved left",
-			id:      "2",
-			left:    true,
+			name:    "Ok, column is moved right",
+			left:    false,
 			expCode: http.StatusOK,
 		},
 		{
-			name:    "Ok, column is moved right",
-			id:      "1",
-			left:    false,
+			name:    "Ok, column is moved left",
+			left:    true,
 			expCode: http.StatusOK,
 		},
 	}
@@ -150,13 +148,12 @@ func TestServer_ColumnMove(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewServer(inmem.TestStoreWithFixtures())
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(&request{Left: tc.left})
 			r, _ := http.NewRequest(http.MethodPost, "/api/v1/columns/column_id/move", b)
 			r = mux.SetURLVars(r, map[string]string{
-				"column_id": tc.id,
+				"column_id": "1",
 			})
 
 			s.columnMove().ServeHTTP(w, r)
@@ -167,7 +164,7 @@ func TestServer_ColumnMove(t *testing.T) {
 }
 
 func TestServer_ColumnUpdate(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -205,7 +202,7 @@ func TestServer_ColumnUpdate(t *testing.T) {
 }
 
 func TestServer_ColumnDelete(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string

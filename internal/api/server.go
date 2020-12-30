@@ -15,7 +15,7 @@ import (
 	"github.com/imarrche/tasker/internal/service"
 	"github.com/imarrche/tasker/internal/service/web"
 	"github.com/imarrche/tasker/internal/store"
-	"github.com/imarrche/tasker/internal/store/pg"
+	"github.com/imarrche/tasker/internal/store/inmem"
 )
 
 // Server is the REST API server serving frontends.
@@ -28,13 +28,22 @@ type Server struct {
 }
 
 // NewServer creates a new Server instance.
-func NewServer(store store.Store) *Server {
-	l := log.New(os.Stdout, "", log.LstdFlags)
-	c := config.New()    // Reading config fron environment.
-	r := mux.NewRouter() // Initializing router.
+func NewServer(c *config.Config, l *log.Logger, store store.Store) *Server {
+	r := mux.NewRouter()
 	service := web.NewService(store)
 
-	return &Server{l: l, config: c, router: r, store: store, service: service}
+	return &Server{config: c, l: l, router: r, store: store, service: service}
+}
+
+// NewTestServer creates a new test Server instance.
+func NewTestServer() *Server {
+	l := log.New(os.Stdout, "", log.LstdFlags)
+	c := config.New() // Reading config from environment.
+	r := mux.NewRouter()
+	store := inmem.TestStoreWithFixtures()
+	service := web.NewService(store)
+
+	return &Server{config: c, l: l, router: r, store: store, service: service}
 }
 
 // Start starts the server.
@@ -43,12 +52,6 @@ func (s *Server) Start() {
 	server := &http.Server{
 		Addr:    s.config.Addr,
 		Handler: s.router,
-	}
-
-	// PostgreSQL.
-	store := pg.New(s.config.PostgreSQL)
-	if err := store.Open(); err != nil {
-		s.l.Fatal(err)
 	}
 
 	// Setting up router.
@@ -75,8 +78,8 @@ func (s *Server) Start() {
 	if err := server.Shutdown(ctx); err != nil {
 		s.l.Fatal("server couldn't gracefully shut down")
 	}
-	if err := store.Close(); err != nil {
-		s.l.Fatal("couldn't disconnect from PostgreSQL")
+	if err := s.store.Close(); err != nil {
+		s.l.Fatal("couldn't close the store")
 	}
 
 	s.l.Println("server shutted down gracefully")
