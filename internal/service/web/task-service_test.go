@@ -175,8 +175,9 @@ func TestTaskService_Update(t *testing.T) {
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, t model.Task) {
 				tr := mock_store.NewMockTaskRepo(c)
 
+				tr.EXPECT().GetByID(t.ID).Return(t, nil)
 				tr.EXPECT().Update(t).Return(t, nil)
-				s.EXPECT().Tasks().Return(tr)
+				s.EXPECT().Tasks().Times(2).Return(tr)
 			},
 			task:     model.Task{ID: 1, Name: "T1", Index: 1, ColumnID: 1},
 			expTask:  model.Task{ID: 1, Name: "T1", Index: 1, ColumnID: 1},

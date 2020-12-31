@@ -57,7 +57,15 @@ func (s *taskService) Update(t model.Task) (model.Task, error) {
 		return model.Task{}, err
 	}
 
-	return s.store.Tasks().Update(t)
+	task, err := s.store.Tasks().GetByID(t.ID)
+	if err != nil {
+		return model.Task{}, err
+	}
+
+	task.Name = t.Name
+	task.Description = t.Description
+
+	return s.store.Tasks().Update(task)
 }
 
 func (s *taskService) MoveToColumnByID(id int, left bool) error {

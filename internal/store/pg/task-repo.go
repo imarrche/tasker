@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/imarrche/tasker/internal/model"
+	"github.com/imarrche/tasker/internal/store"
 )
 
 // taskRepo is the task repository for PostgreSQL store.
@@ -17,13 +18,14 @@ func newTaskRepo(db *sql.DB) *taskRepo {
 }
 
 // GetByColumnID returns all tasks with specific column ID.
-func (r *taskRepo) GetByColumnID(id int) (ts []model.Task, err error) {
+func (r *taskRepo) GetByColumnID(id int) ([]model.Task, error) {
 	rows, err := r.db.Query("SELECT * FROM tasks WHERE column_id = $1;", id)
 	if err != nil {
 		return []model.Task{}, err
 	}
 	defer rows.Close()
 
+	ts := []model.Task{}
 	var t model.Task
 	for rows.Next() {
 		err := rows.Scan(&t.ID, &t.Name, &t.Description, &t.Index, &t.ColumnID)
@@ -58,10 +60,14 @@ func (r *taskRepo) Create(t model.Task) (model.Task, error) {
 // GetByID returns the task with specifc ID.
 func (r *taskRepo) GetByID(id int) (model.Task, error) {
 	var t model.Task
-	query := "SELECT FROM tasks WHERE id = $1;"
+	query := "SELECT * FROM tasks WHERE id = $1;"
 
 	row := r.db.QueryRow(query, id)
-	if err := row.Scan(&t.ID, &t.Name, &t.Description, &t.Index, &t.ColumnID); err != nil {
+	err := row.Scan(&t.ID, &t.Name, &t.Description, &t.Index, &t.ColumnID)
+	if err == sql.ErrNoRows {
+		return model.Task{}, store.ErrNotFound
+	}
+	if err != nil {
 		return model.Task{}, err
 	}
 
@@ -71,10 +77,14 @@ func (r *taskRepo) GetByID(id int) (model.Task, error) {
 // GetByIndexAndColumnID returns the task with specific index and column ID.
 func (r *taskRepo) GetByIndexAndColumnID(index, id int) (model.Task, error) {
 	var t model.Task
-	query := "SELECT FROM tasks WHERE index = $1 AND column_id = $2;"
+	query := "SELECT * FROM tasks WHERE index = $1 AND column_id = $2;"
 
 	row := r.db.QueryRow(query, index, id)
-	if err := row.Scan(&t.ID, &t.Name, &t.Description, &t.Index, &t.ColumnID); err != nil {
+	err := row.Scan(&t.ID, &t.Name, &t.Description, &t.Index, &t.ColumnID)
+	if err == sql.ErrNoRows {
+		return model.Task{}, store.ErrNotFound
+	}
+	if err != nil {
 		return model.Task{}, err
 	}
 
@@ -83,9 +93,9 @@ func (r *taskRepo) GetByIndexAndColumnID(index, id int) (model.Task, error) {
 
 // Update updates the tasks.
 func (r *taskRepo) Update(t model.Task) (model.Task, error) {
-	query := "UPDATE tasks SET name = $1, description = $2, index = $3 WHERE id = $4;"
+	query := "UPDATE tasks SET name = $1, description = $2, index = $3, column_id = $4 WHERE id = $5;"
 
-	_, err := r.db.Exec(query, t.Name, t.Description, t.Index, t.ID)
+	_, err := r.db.Exec(query, t.Name, t.Description, t.Index, t.ColumnID, t.ID)
 	return t, err
 }
 

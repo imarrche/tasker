@@ -74,17 +74,9 @@ func (r *taskRepo) Update(t model.Task) (model.Task, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if task, ok := r.db.tasks[t.ID]; ok {
-		task.Name = t.Name
-		task.Description = t.Description
-		if t.Index != 0 {
-			task.Index = t.Index
-		}
-		if t.ColumnID != 0 {
-			task.ColumnID = t.ColumnID
-		}
-		r.db.tasks[task.ID] = task
-		return task, nil
+	if _, ok := r.db.tasks[t.ID]; ok {
+		r.db.tasks[t.ID] = t
+		return t, nil
 	}
 
 	return model.Task{}, store.ErrNotFound

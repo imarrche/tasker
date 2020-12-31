@@ -109,7 +109,7 @@ func TestTaskRepo_GetByID(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "name", "description", "index", "column_id"}).AddRow(
 					1, "Task 1", "", 1, 1,
 				)
-				mock.ExpectQuery("SELECT FROM tasks WHERE (.+);").WithArgs(
+				mock.ExpectQuery("SELECT (.+) FROM tasks WHERE (.+);").WithArgs(
 					task.ID,
 				).WillReturnRows(rows)
 			},
@@ -150,7 +150,7 @@ func TestTaskRepo_GetByIndexAndColumnID(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "name", "description", "index", "column_id"}).AddRow(
 					1, "Task 1", "", 1, 1,
 				)
-				mock.ExpectQuery("SELECT FROM tasks WHERE (.+);").WithArgs(
+				mock.ExpectQuery("SELECT (.+) FROM tasks WHERE (.+);").WithArgs(
 					task.Index, task.ColumnID,
 				).WillReturnRows(rows)
 			},
@@ -189,7 +189,7 @@ func TestTaskRepo_Update(t *testing.T) {
 			name: "OK, task is updated",
 			mock: func(task model.Task) {
 				mock.ExpectExec("UPDATE tasks SET (.+) WHERE (.+)").WithArgs(
-					task.Name, task.Description, task.Index, task.ID,
+					task.Name, task.Description, task.Index, task.ColumnID, task.ID,
 				).WillReturnResult(sqlmock.NewResult(0, 1))
 			},
 			task:     model.Task{ID: 1, Name: "Task 1", Index: 1, ColumnID: 1},

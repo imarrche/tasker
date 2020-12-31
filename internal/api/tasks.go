@@ -108,6 +108,10 @@ func (s *Server) taskMoveX() http.HandlerFunc {
 		}
 
 		err = s.service.Tasks().MoveToColumnByID(taskID, request.Left)
+		if err == store.ErrNotFound {
+			s.error(w, r, http.StatusNotFound, nil)
+			return
+		}
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, nil)
 			return
@@ -131,13 +135,17 @@ func (s *Server) taskMoveY() http.HandlerFunc {
 
 		request := &request{}
 		if err = json.NewDecoder(r.Body).Decode(request); err != nil {
-			s.error(w, r, http.StatusBadRequest, nil)
+			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
 
 		err = s.service.Tasks().MoveByID(taskID, request.Up)
+		if err == store.ErrNotFound {
+			s.error(w, r, http.StatusNotFound, nil)
+			return
+		}
 		if err != nil {
-			s.error(w, r, http.StatusBadRequest, nil)
+			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
 
@@ -154,13 +162,13 @@ func (s *Server) taskUpdate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		taskID, err := strconv.Atoi(mux.Vars(r)["task_id"])
 		if err != nil {
-			s.error(w, r, http.StatusBadRequest, nil)
+			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
 
 		request := &request{}
 		if err = json.NewDecoder(r.Body).Decode(request); err != nil {
-			s.error(w, r, http.StatusBadRequest, nil)
+			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
 
@@ -170,8 +178,13 @@ func (s *Server) taskUpdate() http.HandlerFunc {
 			Description: request.Description,
 		}
 		t, err = s.service.Tasks().Update(t)
+		if err == store.ErrNotFound {
+			s.error(w, r, http.StatusNotFound, nil)
+			return
+		}
 		if err != nil {
-			s.error(w, r, http.StatusUnprocessableEntity, nil)
+			s.error(w, r, http.StatusUnprocessableEntity, err)
+			return
 		}
 
 		s.respond(w, r, http.StatusOK, t)
