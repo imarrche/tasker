@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/imarrche/tasker/internal/model"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/imarrche/tasker/internal/model"
 )
 
 func TestColumnRepo_GetByProjectID(t *testing.T) {
@@ -109,7 +110,7 @@ func TestColumnRepo_GetByID(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "name", "index", "project_id"}).AddRow(
 					1, "Column 1", 1, 1,
 				)
-				mock.ExpectQuery("SELECT FROM columns WHERE (.+);").WithArgs(
+				mock.ExpectQuery("SELECT (.+) FROM columns WHERE (.+);").WithArgs(
 					c.ID,
 				).WillReturnRows(rows)
 			},
@@ -150,7 +151,7 @@ func TestColumnRepo_GetByIndexAndProjectID(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "name", "index", "project_id"}).AddRow(
 					1, "Column 1", 1, 1,
 				)
-				mock.ExpectQuery("SELECT FROM columns WHERE (.+);").WithArgs(
+				mock.ExpectQuery("SELECT (.+) FROM columns WHERE (.+);").WithArgs(
 					c.Index, c.ProjectID,
 				).WillReturnRows(rows)
 			},

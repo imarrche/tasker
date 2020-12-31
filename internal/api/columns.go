@@ -57,6 +57,10 @@ func (s *Server) columnCreate() http.HandlerFunc {
 			ProjectID: projectID,
 		}
 		c, err = s.service.Columns().Create(c)
+		if err == store.ErrNotFound {
+			s.error(w, r, http.StatusNotFound, nil)
+			return
+		}
 		if err != nil {
 			s.error(w, r, http.StatusUnprocessableEntity, err)
 			return
@@ -77,9 +81,11 @@ func (s *Server) columnDetail() http.HandlerFunc {
 		c, err := s.service.Columns().GetByID(columnID)
 		if err == store.ErrNotFound {
 			s.error(w, r, http.StatusNotFound, nil)
+			return
 		}
 		if err != nil {
 			s.error(w, r, http.StatusInternalServerError, nil)
+			return
 		}
 
 		s.respond(w, r, http.StatusOK, c)
@@ -105,6 +111,10 @@ func (s *Server) columnMove() http.HandlerFunc {
 		}
 
 		err = s.service.Columns().MoveByID(columnID, request.Left)
+		if err == store.ErrNotFound {
+			s.error(w, r, http.StatusNotFound, nil)
+			return
+		}
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, nil)
 			return
@@ -137,6 +147,10 @@ func (s *Server) columnUpdate() http.HandlerFunc {
 			Name: request.Name,
 		}
 		c, err = s.service.Columns().Update(c)
+		if err == store.ErrNotFound {
+			s.error(w, r, http.StatusNotFound, nil)
+			return
+		}
 		if err != nil {
 			s.error(w, r, http.StatusUnprocessableEntity, err)
 			return

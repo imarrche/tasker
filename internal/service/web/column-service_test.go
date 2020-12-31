@@ -22,8 +22,10 @@ func TestColumnService_GetByProjectID(t *testing.T) {
 		{
 			name: "Columns are retrieved and sorted alphabetically",
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
+				pr := mock_store.NewMockProjectRepo(c)
 				cr := mock_store.NewMockColumnRepo(c)
 
+				pr.EXPECT().GetByID(p.ID).Return(p, nil)
 				cr.EXPECT().GetByProjectID(p.ID).Return(
 					[]model.Column{
 						model.Column{ID: 1, Name: "C1", Index: 3, ProjectID: 1},
@@ -32,6 +34,7 @@ func TestColumnService_GetByProjectID(t *testing.T) {
 					},
 					nil,
 				)
+				s.EXPECT().Projects().Return(pr)
 				s.EXPECT().Columns().Return(cr)
 			},
 			project: model.Project{ID: 1, Name: "P"},
@@ -45,9 +48,12 @@ func TestColumnService_GetByProjectID(t *testing.T) {
 		{
 			name: "Error occures while retrieving columns",
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, p model.Project) {
+				pr := mock_store.NewMockProjectRepo(c)
 				cr := mock_store.NewMockColumnRepo(c)
 
+				pr.EXPECT().GetByID(p.ID).Return(p, nil)
 				cr.EXPECT().GetByProjectID(p.ID).Return(nil, store.ErrDbQuery)
+				s.EXPECT().Projects().Return(pr)
 				s.EXPECT().Columns().Return(cr)
 			},
 			expColumns: nil,
@@ -82,8 +88,10 @@ func TestColumnService_Create(t *testing.T) {
 		{
 			name: "Column is created",
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
+				pr := mock_store.NewMockProjectRepo(c)
 				cr := mock_store.NewMockColumnRepo(c)
 
+				pr.EXPECT().GetByID(column.ProjectID).Return(model.Project{ID: column.ProjectID}, nil)
 				cr.EXPECT().GetByProjectID(column.ProjectID).Times(2).Return([]model.Column{}, nil)
 				cr.EXPECT().Create(column).Return(
 					model.Column{
@@ -94,6 +102,7 @@ func TestColumnService_Create(t *testing.T) {
 					},
 					nil,
 				)
+				s.EXPECT().Projects().Return(pr)
 				s.EXPECT().Columns().Times(3).Return(cr)
 			},
 			column:    model.Column{Name: "C", Index: 1, ProjectID: 1},
@@ -177,8 +186,9 @@ func TestColumnService_Update(t *testing.T) {
 				cr := mock_store.NewMockColumnRepo(c)
 
 				cr.EXPECT().GetByProjectID(column.ProjectID).Return([]model.Column{}, nil)
+				cr.EXPECT().GetByID(column.ID).Return(column, nil)
 				cr.EXPECT().Update(column).Return(column, nil)
-				s.EXPECT().Columns().Times(2).Return(cr)
+				s.EXPECT().Columns().Times(3).Return(cr)
 			},
 			column:    model.Column{ID: 1, Name: "C", Index: 1, ProjectID: 1},
 			expColumn: model.Column{ID: 1, Name: "C", Index: 1, ProjectID: 1},

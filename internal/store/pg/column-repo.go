@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/imarrche/tasker/internal/model"
+	"github.com/imarrche/tasker/internal/store"
 )
 
 // columnRepo is the column repository for PostgreSQL store.
@@ -58,10 +59,14 @@ func (r *columnRepo) Create(c model.Column) (model.Column, error) {
 // GetByID returns the column with specifc ID.
 func (r *columnRepo) GetByID(id int) (model.Column, error) {
 	var c model.Column
-	query := "SELECT FROM columns WHERE id = $1;"
+	query := "SELECT * FROM columns WHERE id = $1;"
 
 	row := r.db.QueryRow(query, id)
-	if err := row.Scan(&c.ID, &c.Name, &c.Index, &c.ProjectID); err != nil {
+	err := row.Scan(&c.ID, &c.Name, &c.Index, &c.ProjectID)
+	if err == sql.ErrNoRows {
+		return model.Column{}, store.ErrNotFound
+	}
+	if err != nil {
 		return model.Column{}, err
 	}
 
@@ -71,7 +76,7 @@ func (r *columnRepo) GetByID(id int) (model.Column, error) {
 // GetByIndexAndProjectID returns the column with specific index and project ID.
 func (r *columnRepo) GetByIndexAndProjectID(index, id int) (model.Column, error) {
 	var c model.Column
-	query := "SELECT FROM columns WHERE index = $1 AND project_id = $2;"
+	query := "SELECT * FROM columns WHERE index = $1 AND project_id = $2;"
 
 	row := r.db.QueryRow(query, index, id)
 	if err := row.Scan(&c.ID, &c.Name, &c.Index, &c.ProjectID); err != nil {
