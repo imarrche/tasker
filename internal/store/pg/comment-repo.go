@@ -3,6 +3,8 @@ package pg
 import (
 	"database/sql"
 
+	"github.com/imarrche/tasker/internal/store"
+
 	"github.com/imarrche/tasker/internal/model"
 )
 
@@ -17,13 +19,14 @@ func newCommentRepo(db *sql.DB) *commentRepo {
 }
 
 // GetByTaskID returns all comments with specific task ID.
-func (r *commentRepo) GetByTaskID(id int) (cs []model.Comment, err error) {
+func (r *commentRepo) GetByTaskID(id int) ([]model.Comment, error) {
 	rows, err := r.db.Query("SELECT * FROM comments WHERE task_id = $1;", id)
 	if err != nil {
 		return []model.Comment{}, err
 	}
 	defer rows.Close()
 
+	cs := []model.Comment{}
 	var c model.Comment
 	for rows.Next() {
 		err := rows.Scan(&c.ID, &c.Text, &c.CreatedAt, &c.TaskID)
@@ -58,10 +61,14 @@ func (r *commentRepo) Create(c model.Comment) (model.Comment, error) {
 // GetByID returns the comment with specific ID.
 func (r *commentRepo) GetByID(id int) (model.Comment, error) {
 	var c model.Comment
-	query := "SELECT FROM comments WHERE id = $1;"
+	query := "SELECT * FROM comments WHERE id = $1;"
 
 	row := r.db.QueryRow(query, id)
-	if err := row.Scan(&c.ID, &c.Text, &c.CreatedAt, &c.TaskID); err != nil {
+	err := row.Scan(&c.ID, &c.Text, &c.CreatedAt, &c.TaskID)
+	if err == sql.ErrNoRows {
+		return model.Comment{}, store.ErrNotFound
+	}
+	if err != nil {
 		return model.Comment{}, err
 	}
 
@@ -70,7 +77,7 @@ func (r *commentRepo) GetByID(id int) (model.Comment, error) {
 
 // Update updates the comment.
 func (r *commentRepo) Update(c model.Comment) (model.Comment, error) {
-	query := "UPDATE comments SET text = $1 WHERE id = $3;"
+	query := "UPDATE comments SET text = $1 WHERE id = $2;"
 
 	_, err := r.db.Exec(query, c.Text, c.ID)
 	return c, err

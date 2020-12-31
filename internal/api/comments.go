@@ -100,13 +100,19 @@ func (s *Server) commentUpdate() http.HandlerFunc {
 		request := &request{}
 		if err = json.NewDecoder(r.Body).Decode(request); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
+			return
 		}
 
 		c := model.Comment{
 			ID:   commentID,
 			Text: request.Text,
 		}
-		if c, err = s.service.Comments().Update(c); err != nil {
+		c, err = s.service.Comments().Update(c)
+		if err == store.ErrNotFound {
+			s.error(w, r, http.StatusNotFound, nil)
+			return
+		}
+		if err != nil {
 			s.error(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}

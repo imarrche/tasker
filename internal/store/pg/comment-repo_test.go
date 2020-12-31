@@ -112,7 +112,7 @@ func TestCommentRepo_GetByID(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "text", "created_at", "task_id"}).AddRow(
 					1, "Comment.", time.Now(), 1,
 				)
-				mock.ExpectQuery("SELECT FROM comments WHERE (.+);").WithArgs(
+				mock.ExpectQuery("SELECT (.+) FROM comments WHERE (.+);").WithArgs(
 					c.ID,
 				).WillReturnRows(rows)
 			},

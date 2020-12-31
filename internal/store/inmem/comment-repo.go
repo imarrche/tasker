@@ -19,17 +19,18 @@ func newCommentRepo(db *inMemoryDb) *commentRepo {
 }
 
 // GetByTaskID returns all comments with specific task ID.
-func (r *commentRepo) GetByTaskID(id int) (comments []model.Comment, err error) {
+func (r *commentRepo) GetByTaskID(id int) ([]model.Comment, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
 
+	cs := []model.Comment{}
 	for _, c := range r.db.comments {
 		if c.TaskID == id {
-			comments = append(comments, c)
+			cs = append(cs, c)
 		}
 	}
 
-	return comments, err
+	return cs, nil
 }
 
 // Create creates and returns a new comment.

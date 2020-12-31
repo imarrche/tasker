@@ -220,8 +220,9 @@ func TestCommentService_Update(t *testing.T) {
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {
 				cr := mock_store.NewMockCommentRepo(c)
 
+				cr.EXPECT().GetByID(comment.ID).Return(comment, nil)
 				cr.EXPECT().Update(comment).Return(comment, nil)
-				s.EXPECT().Comments().Return(cr)
+				s.EXPECT().Comments().Times(2).Return(cr)
 			},
 			comment:    model.Comment{ID: 1, Text: "C", TaskID: 1},
 			expComment: model.Comment{ID: 1, Text: "C", TaskID: 1},
@@ -264,8 +265,9 @@ func TestCommentService_DeleteByID(t *testing.T) {
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, comment model.Comment) {
 				cr := mock_store.NewMockCommentRepo(c)
 
+				cr.EXPECT().GetByID(comment.ID).Return(comment, nil)
 				cr.EXPECT().DeleteByID(comment.ID).Return(nil)
-				s.EXPECT().Comments().Return(cr)
+				s.EXPECT().Comments().Times(2).Return(cr)
 			},
 			comment:  model.Comment{ID: 1, Text: "C", TaskID: 1},
 			expError: nil,

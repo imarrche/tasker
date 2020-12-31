@@ -57,11 +57,22 @@ func (s *commentService) Update(c model.Comment) (model.Comment, error) {
 		return model.Comment{}, err
 	}
 
-	return s.store.Comments().Update(c)
+	comment, err := s.store.Comments().GetByID(c.ID)
+	if err != nil {
+		return model.Comment{}, err
+	}
+
+	comment.Text = c.Text
+
+	return s.store.Comments().Update(comment)
 }
 
 // DeleteByID deletes the comment with specific ID.
 func (s *commentService) DeleteByID(id int) error {
+	if _, err := s.store.Comments().GetByID(id); err != nil {
+		return err
+	}
+
 	return s.store.Comments().DeleteByID(id)
 }
 
