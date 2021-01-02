@@ -14,9 +14,7 @@ type projectRepo struct {
 }
 
 // newProjectRepo creates and returns a new projectRepo instance.
-func newProjectRepo(db *inMemoryDb) *projectRepo {
-	return &projectRepo{db: db}
-}
+func newProjectRepo(db *inMemoryDb) *projectRepo { return &projectRepo{db: db} }
 
 // GetAll returns all projects.
 func (r *projectRepo) GetAll() ([]model.Project, error) {
@@ -59,15 +57,13 @@ func (r *projectRepo) Update(p model.Project) (model.Project, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if project, ok := r.db.projects[p.ID]; ok {
-		project.Name = p.Name
-		project.Description = p.Description
-		r.db.projects[project.ID] = project
-
-		return project, nil
+	if _, ok := r.db.projects[p.ID]; !ok {
+		return model.Project{}, store.ErrNotFound
 	}
 
-	return model.Project{}, store.ErrNotFound
+	r.db.projects[p.ID] = p
+
+	return p, nil
 }
 
 // DeleteByID deletes the project with specific ID.
@@ -81,20 +77,20 @@ func (r *projectRepo) DeleteByID(id int) error {
 
 	for columnID, column := range r.db.columns {
 		if column.ProjectID == id {
-			delete(r.db.columns, columnID)
 			for taskID, task := range r.db.tasks {
 				if task.ColumnID == columnID {
-					delete(r.db.tasks, taskID)
 					for commentID, comment := range r.db.comments {
 						if comment.TaskID == taskID {
 							delete(r.db.comments, commentID)
 						}
 					}
+					delete(r.db.tasks, taskID)
 				}
 			}
+			delete(r.db.columns, columnID)
 		}
 	}
-
 	delete(r.db.projects, id)
+
 	return nil
 }

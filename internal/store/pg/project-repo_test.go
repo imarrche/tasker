@@ -19,27 +19,28 @@ func TestProjectRepo_GetAll(t *testing.T) {
 
 	testcases := []struct {
 		name        string
-		mock        func()
+		mock        func([]model.Project)
 		expProjects []model.Project
 		expError    error
 	}{
 		{
-			name: "OK, projects are retrieved",
-			mock: func() {
-				rows := sqlmock.NewRows([]string{"id", "name", "description"}).AddRow(
-					1, "Project 1", "",
-				)
+			name: "projects are retrieved",
+			mock: func(ps []model.Project) {
+				rows := sqlmock.NewRows([]string{"id", "name", "description"})
+				for _, p := range ps {
+					rows = rows.AddRow(p.ID, p.Name, p.Description)
+				}
 				mock.ExpectQuery("SELECT (.+) FROM projects;").WillReturnRows(rows)
 			},
 			expProjects: []model.Project{
-				model.Project{ID: 1, Name: "Project 1"},
+				model.Project{ID: 1, Name: "Project 1"}, model.Project{ID: 2, Name: "Project 2"},
 			},
 			expError: nil,
 		},
 	}
 
 	for _, tc := range testcases {
-		tc.mock()
+		tc.mock(tc.expProjects)
 
 		ps, err := r.GetAll()
 
@@ -58,21 +59,21 @@ func TestProjectRepo_Create(t *testing.T) {
 
 	testcases := []struct {
 		name       string
-		mock       func(p model.Project)
+		mock       func(model.Project)
 		project    model.Project
 		expProject model.Project
 		expError   error
 	}{
 		{
-			name: "OK, project is created",
+			name: "project is created",
 			mock: func(p model.Project) {
 				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
-				mock.ExpectQuery("INSERT INTO projects (.+) VALUES (.+)").WithArgs(
+				mock.ExpectQuery("INSERT INTO projects (.+) VALUES (.+);").WithArgs(
 					p.Name, p.Description,
 				).WillReturnRows(rows)
 			},
-			project:    model.Project{Name: "Project 1", Description: "Project 1 description."},
-			expProject: model.Project{ID: 1, Name: "Project 1", Description: "Project 1 description."},
+			project:    model.Project{Name: "Project 1", Description: "Description."},
+			expProject: model.Project{ID: 1, Name: "Project 1", Description: "Description."},
 			expError:   nil,
 		},
 	}
@@ -97,18 +98,18 @@ func TestProjectRepo_GetByID(t *testing.T) {
 
 	testcases := []struct {
 		name       string
-		mock       func(p model.Project)
+		mock       func(model.Project)
 		project    model.Project
 		expProject model.Project
 		expError   error
 	}{
 		{
-			name: "OK, project is retrieved",
+			name: "project is retrieved",
 			mock: func(p model.Project) {
 				rows := sqlmock.NewRows([]string{"id", "name", "description"}).AddRow(
-					1, "Project 1", "",
+					p.ID, p.Name, p.Description,
 				)
-				mock.ExpectQuery("SELECT (.+) FROM projects WHERE (.+)").WithArgs(
+				mock.ExpectQuery("SELECT (.+) FROM projects WHERE id = (.+);").WithArgs(
 					p.ID,
 				).WillReturnRows(rows)
 			},
@@ -138,17 +139,17 @@ func TestProjectRepo_Update(t *testing.T) {
 
 	testcases := []struct {
 		name       string
-		mock       func(p model.Project)
+		mock       func(model.Project)
 		project    model.Project
 		expProject model.Project
 		expError   error
 	}{
 		{
-			name: "OK, project is updated",
+			name: "project is updated",
 			mock: func(p model.Project) {
-				mock.ExpectExec("UPDATE projects SET (.+) WHERE (.+)").WithArgs(
+				mock.ExpectExec("UPDATE projects SET (.+) WHERE id = (.+);").WithArgs(
 					p.Name, p.Description, p.ID,
-				).WillReturnResult(sqlmock.NewResult(0, 1))
+				).WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			project:    model.Project{ID: 1, Name: "Project 1"},
 			expProject: model.Project{ID: 1, Name: "Project 1"},
@@ -166,7 +167,7 @@ func TestProjectRepo_Update(t *testing.T) {
 	}
 }
 
-func TestProjectRepo_Delete(t *testing.T) {
+func TestProjectRepo_DeleteByID(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
@@ -176,16 +177,16 @@ func TestProjectRepo_Delete(t *testing.T) {
 
 	testcases := []struct {
 		name     string
-		mock     func(p model.Project)
+		mock     func(model.Project)
 		project  model.Project
 		expError error
 	}{
 		{
-			name: "OK, project is deleted",
+			name: "project is deleted",
 			mock: func(p model.Project) {
-				mock.ExpectExec("DELETE FROM projects WHERE (.+)").WithArgs(
+				mock.ExpectExec("DELETE FROM projects WHERE id = (.+);").WithArgs(
 					p.ID,
-				).WillReturnResult(sqlmock.NewResult(0, 1))
+				).WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			project:  model.Project{ID: 1, Name: "Project 1"},
 			expError: nil,

@@ -22,8 +22,10 @@ func TestTaskService_GetByColumnID(t *testing.T) {
 		{
 			name: "Tasks are retrieved and sorted by index",
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
+				cr := mock_store.NewMockColumnRepo(c)
 				tr := mock_store.NewMockTaskRepo(c)
 
+				cr.EXPECT().GetByID(column.ID).Return(column, nil)
 				tr.EXPECT().GetByColumnID(column.ID).Return(
 					[]model.Task{
 						model.Task{ID: 1, Index: 3, Name: "T1", ColumnID: 1},
@@ -32,6 +34,7 @@ func TestTaskService_GetByColumnID(t *testing.T) {
 					},
 					nil,
 				)
+				s.EXPECT().Columns().Return(cr)
 				s.EXPECT().Tasks().Return(tr)
 			},
 			expTasks: []model.Task{
@@ -44,9 +47,12 @@ func TestTaskService_GetByColumnID(t *testing.T) {
 		{
 			name: "Error occures while retrieving tasks",
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
+				cr := mock_store.NewMockColumnRepo(c)
 				tr := mock_store.NewMockTaskRepo(c)
 
+				cr.EXPECT().GetByID(column.ID).Return(column, nil)
 				tr.EXPECT().GetByColumnID(column.ID).Return(nil, store.ErrDbQuery)
+				s.EXPECT().Columns().Return(cr)
 				s.EXPECT().Tasks().Return(tr)
 			},
 			expTasks: nil,

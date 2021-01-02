@@ -31,16 +31,10 @@ type Store struct {
 }
 
 // NewStore creates and returns a new Store instance.
-func NewStore() *Store {
-	return &Store{
-		db: newInMemoryDb(),
-	}
-}
+func NewStore() *Store { return &Store{db: newInMemoryDb()} }
 
 // Open opens the store.
-func (s *Store) Open() error {
-	return nil
-}
+func (s *Store) Open() error { return nil }
 
 // Projects returns the project repository.
 func (s *Store) Projects() store.ProjectRepo {
@@ -79,6 +73,4 @@ func (s *Store) Comments() store.CommentRepo {
 }
 
 // Close closes the store.
-func (s *Store) Close() error {
-	return nil
-}
+func (s *Store) Close() error { return nil }

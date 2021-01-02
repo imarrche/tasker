@@ -24,7 +24,9 @@ func TestCommentService_GetByTaskID(t *testing.T) {
 			name: "Comments are retrieved and sorted by creating date",
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, t model.Task) {
 				cr := mock_store.NewMockCommentRepo(c)
+				tr := mock_store.NewMockTaskRepo(c)
 
+				tr.EXPECT().GetByID(t.ID).Return(t, nil)
 				cr.EXPECT().GetByTaskID(t.ID).Return(
 					[]model.Comment{
 						model.Comment{
@@ -49,6 +51,7 @@ func TestCommentService_GetByTaskID(t *testing.T) {
 					nil,
 				)
 				s.EXPECT().Comments().Return(cr)
+				s.EXPECT().Tasks().Return(tr)
 			},
 			task: model.Task{ID: 1, Name: "T", Index: 1, ColumnID: 1},
 			expComments: []model.Comment{
@@ -77,9 +80,12 @@ func TestCommentService_GetByTaskID(t *testing.T) {
 			name: "Error occures while retrieving columns",
 			mock: func(s *mock_store.MockStore, c *gomock.Controller, t model.Task) {
 				cr := mock_store.NewMockCommentRepo(c)
+				tr := mock_store.NewMockTaskRepo(c)
 
+				tr.EXPECT().GetByID(t.ID).Return(t, nil)
 				cr.EXPECT().GetByTaskID(t.ID).Return(nil, store.ErrDbQuery)
 				s.EXPECT().Comments().Return(cr)
+				s.EXPECT().Tasks().Return(tr)
 			},
 			task:        model.Task{ID: 1, Name: "T", Index: 1, ColumnID: 1},
 			expComments: nil,

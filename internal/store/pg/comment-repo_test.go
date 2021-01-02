@@ -20,34 +20,41 @@ func TestCommentRepo_GetByTaskID(t *testing.T) {
 
 	testcases := []struct {
 		name        string
-		mock        func()
+		mock        func([]model.Comment)
+		taskID      int
 		expComments []model.Comment
 		expError    error
 	}{
 		{
-			name: "OK, comments are retrieved",
-			mock: func() {
-				rows := sqlmock.NewRows([]string{"id", "text", "created_at", "task_id"}).AddRow(
-					1, "Comment.", time.Now(), 1,
+			name: "comments are retrieved",
+			mock: func(cs []model.Comment) {
+				rows := sqlmock.NewRows([]string{"id", "name", "description", "index", "column_id"}).AddRow(
+					1, "Task 1", "", 1, 1,
 				)
+				mock.ExpectQuery("SELECT (.+) FROM tasks WHERE id = (.+);").WillReturnRows(rows)
+
+				rows = sqlmock.NewRows([]string{"id", "text", "created_at", "task_id"})
+				for _, c := range cs {
+					rows = rows.AddRow(c.ID, c.Text, c.CreatedAt, c.TaskID)
+				}
 				mock.ExpectQuery("SELECT (.+) FROM comments WHERE task_id = (.+);").WillReturnRows(rows)
 			},
+			taskID: 1,
 			expComments: []model.Comment{
-				model.Comment{ID: 1, Text: "Comment."},
+				model.Comment{ID: 1, Text: "Comment.", CreatedAt: time.Time{}, TaskID: 1},
+				model.Comment{ID: 2, Text: "Comment.", CreatedAt: time.Time{}, TaskID: 1},
 			},
 			expError: nil,
 		},
 	}
 
 	for _, tc := range testcases {
-		tc.mock()
+		tc.mock(tc.expComments)
 
-		ps, err := r.GetByTaskID(1)
+		cs, err := r.GetByTaskID(tc.taskID)
 
 		assert.Equal(t, tc.expError, err)
-		for i := range ps {
-			assert.Equal(t, tc.expComments[i].ID, ps[i].ID)
-		}
+		assert.Equal(t, tc.expComments, cs)
 	}
 }
 
@@ -67,15 +74,15 @@ func TestCommentRepo_Create(t *testing.T) {
 		expError   error
 	}{
 		{
-			name: "OK, comment is created",
+			name: "comment is created",
 			mock: func(c model.Comment) {
 				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
-				mock.ExpectQuery("INSERT INTO comments (.+) VALUES (.+)").WithArgs(
+				mock.ExpectQuery("INSERT INTO comments (.+) VALUES (.+);").WithArgs(
 					c.Text, c.CreatedAt, c.TaskID,
 				).WillReturnRows(rows)
 			},
-			comment:    model.Comment{Text: "Comment.", CreatedAt: time.Now(), TaskID: 1},
-			expComment: model.Comment{ID: 1, Text: "Comment.", CreatedAt: time.Now(), TaskID: 1},
+			comment:    model.Comment{Text: "Comment.", CreatedAt: time.Time{}, TaskID: 1},
+			expComment: model.Comment{ID: 1, Text: "Comment.", CreatedAt: time.Time{}, TaskID: 1},
 			expError:   nil,
 		},
 	}
@@ -83,11 +90,10 @@ func TestCommentRepo_Create(t *testing.T) {
 	for _, tc := range testcases {
 		tc.mock(tc.comment)
 
-		p, err := r.Create(tc.comment)
+		c, err := r.Create(tc.comment)
 
 		assert.Equal(t, tc.expError, err)
-		assert.Equal(t, tc.expComment.ID, p.ID)
-		assert.Equal(t, tc.expComment.Text, p.Text)
+		assert.Equal(t, tc.expComment, c)
 	}
 }
 
@@ -107,17 +113,17 @@ func TestCommentRepo_GetByID(t *testing.T) {
 		expError   error
 	}{
 		{
-			name: "OK, comment is retrieved",
+			name: "comment is retrieved",
 			mock: func(c model.Comment) {
 				rows := sqlmock.NewRows([]string{"id", "text", "created_at", "task_id"}).AddRow(
-					1, "Comment.", time.Now(), 1,
+					c.ID, c.Text, c.CreatedAt, c.TaskID,
 				)
-				mock.ExpectQuery("SELECT (.+) FROM comments WHERE (.+);").WithArgs(
+				mock.ExpectQuery("SELECT (.+) FROM comments WHERE id = (.+);").WithArgs(
 					c.ID,
 				).WillReturnRows(rows)
 			},
-			comment:    model.Comment{ID: 1, Text: "Comment."},
-			expComment: model.Comment{ID: 1, Text: "Comment."},
+			comment:    model.Comment{ID: 1, Text: "Comment.", CreatedAt: time.Time{}, TaskID: 1},
+			expComment: model.Comment{ID: 1, Text: "Comment.", CreatedAt: time.Time{}, TaskID: 1},
 			expError:   nil,
 		},
 	}
@@ -125,11 +131,10 @@ func TestCommentRepo_GetByID(t *testing.T) {
 	for _, tc := range testcases {
 		tc.mock(tc.comment)
 
-		p, err := r.GetByID(tc.comment.ID)
+		c, err := r.GetByID(tc.comment.ID)
 
 		assert.Equal(t, tc.expError, err)
-		assert.Equal(t, tc.expComment.ID, p.ID)
-		assert.Equal(t, tc.expComment.Text, p.Text)
+		assert.Equal(t, tc.expComment, c)
 	}
 }
 
@@ -149,14 +154,14 @@ func TestCommentRepo_Update(t *testing.T) {
 		expError   error
 	}{
 		{
-			name: "OK, comment is updated",
+			name: "comment is updated",
 			mock: func(c model.Comment) {
-				mock.ExpectExec("UPDATE comments SET (.+) WHERE (.+)").WithArgs(
-					c.Text, c.ID,
-				).WillReturnResult(sqlmock.NewResult(0, 1))
+				mock.ExpectExec("UPDATE comments SET (.+) WHERE id = (.+);").WithArgs(
+					c.Text, c.CreatedAt, c.TaskID, c.ID,
+				).WillReturnResult(sqlmock.NewResult(1, 1))
 			},
-			comment:    model.Comment{ID: 1, Text: "Comment."},
-			expComment: model.Comment{ID: 1, Text: "Comment."},
+			comment:    model.Comment{ID: 1, Text: "Comment.", CreatedAt: time.Time{}, TaskID: 1},
+			expComment: model.Comment{ID: 1, Text: "Comment.", CreatedAt: time.Time{}, TaskID: 1},
 			expError:   nil,
 		},
 	}
@@ -164,14 +169,14 @@ func TestCommentRepo_Update(t *testing.T) {
 	for _, tc := range testcases {
 		tc.mock(tc.comment)
 
-		p, err := r.Update(tc.comment)
+		c, err := r.Update(tc.comment)
 
 		assert.Equal(t, tc.expError, err)
-		assert.Equal(t, tc.expComment.Text, p.Text)
+		assert.Equal(t, tc.expComment, c)
 	}
 }
 
-func TestCommentRepo_Delete(t *testing.T) {
+func TestCommentRepo_DeleteByID(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
@@ -186,13 +191,13 @@ func TestCommentRepo_Delete(t *testing.T) {
 		expError error
 	}{
 		{
-			name: "OK, comment is deleted",
+			name: "comment is deleted",
 			mock: func(c model.Comment) {
-				mock.ExpectExec("DELETE FROM comments WHERE (.+)").WithArgs(
+				mock.ExpectExec("DELETE FROM comments WHERE id = (.+);").WithArgs(
 					c.ID,
-				).WillReturnResult(sqlmock.NewResult(0, 1))
+				).WillReturnResult(sqlmock.NewResult(1, 1))
 			},
-			comment:  model.Comment{ID: 1, Text: "Comment."},
+			comment:  model.Comment{ID: 1, Text: "Comment.", CreatedAt: time.Time{}, TaskID: 1},
 			expError: nil,
 		},
 	}

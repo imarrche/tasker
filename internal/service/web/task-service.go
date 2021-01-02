@@ -19,6 +19,10 @@ func newTaskService(s store.Store) *taskService {
 
 // GetByColumnID returns all tasks with specific column ID sorted by index.
 func (s *taskService) GetByColumnID(id int) ([]model.Task, error) {
+	if _, err := s.store.Columns().GetByID(id); err != nil {
+		return nil, err
+	}
+
 	ts, err := s.store.Tasks().GetByColumnID(id)
 	if err != nil {
 		return nil, err

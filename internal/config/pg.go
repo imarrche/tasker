@@ -1,6 +1,6 @@
 package config
 
-// PostgreSQL is config for PostgreSQL database.
+// PostgreSQL is the config for PostgreSQL database.
 type PostgreSQL struct {
 	Host     string
 	Port     string

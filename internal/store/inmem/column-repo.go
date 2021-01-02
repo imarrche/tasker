@@ -14,33 +14,40 @@ type columnRepo struct {
 }
 
 // newColumnRepo creates and returns a new columnRepo instance.
-func newColumnRepo(db *inMemoryDb) *columnRepo {
-	return &columnRepo{db: db}
-}
+func newColumnRepo(db *inMemoryDb) *columnRepo { return &columnRepo{db: db} }
 
 // GetByProjectID returns all columns with specific project ID.
-func (r *columnRepo) GetByProjectID(id int) (columns []model.Column, err error) {
+func (r *columnRepo) GetByProjectID(id int) ([]model.Column, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
 
+	if _, ok := r.db.projects[id]; !ok {
+		return nil, store.ErrNotFound
+	}
+
+	cs := []model.Column{}
 	for _, c := range r.db.columns {
 		if c.ProjectID == id {
-			columns = append(columns, c)
+			cs = append(cs, c)
 		}
 	}
 
-	return columns, err
+	return cs, nil
 }
 
 // Create creates and returns a new column.
-func (r *columnRepo) Create(column model.Column) (model.Column, error) {
+func (r *columnRepo) Create(c model.Column) (model.Column, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	column.ID = len(r.db.columns) + 1
-	r.db.columns[column.ID] = column
+	if _, ok := r.db.projects[c.ProjectID]; !ok {
+		return model.Column{}, store.ErrDbQuery
+	}
 
-	return column, nil
+	c.ID = len(r.db.columns) + 1
+	r.db.columns[c.ID] = c
+
+	return c, nil
 }
 
 // GetByID returns the column with specific ID.
@@ -74,16 +81,16 @@ func (r *columnRepo) Update(c model.Column) (model.Column, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if column, ok := r.db.columns[c.ID]; ok {
-		column.Name = c.Name
-		if c.Index != 0 {
-			column.Index = c.Index
-		}
-		r.db.columns[column.ID] = column
-		return column, nil
+	if _, ok := r.db.columns[c.ID]; !ok {
+		return model.Column{}, store.ErrNotFound
+	}
+	if _, ok := r.db.projects[c.ProjectID]; !ok {
+		return model.Column{}, store.ErrDbQuery
 	}
 
-	return model.Column{}, store.ErrNotFound
+	r.db.columns[c.ID] = c
+
+	return c, nil
 }
 
 // DeleteByID deletes the column with specific ID.
@@ -97,15 +104,15 @@ func (r *columnRepo) DeleteByID(id int) error {
 
 	for taskID, task := range r.db.tasks {
 		if task.ColumnID == id {
-			delete(r.db.tasks, taskID)
 			for commentID, comment := range r.db.comments {
 				if comment.TaskID == taskID {
 					delete(r.db.comments, commentID)
 				}
 			}
+			delete(r.db.tasks, taskID)
 		}
 	}
-
 	delete(r.db.columns, id)
+
 	return nil
 }

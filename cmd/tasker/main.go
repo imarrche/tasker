@@ -11,15 +11,20 @@ import (
 )
 
 func main() {
+	// Main logger.
 	l := log.New(os.Stdout, "", log.LstdFlags)
 
-	c := config.New() // Reading config from environment.
+	// Reading config from environment.
+	c := config.New()
 
-	// PostgreSQL.
-	store := pg.New(c.PostgreSQL)
-	if err := store.Open(); err != nil {
+	// Opening PostgreSQL store.
+	s := pg.New(c.PostgreSQL)
+	if err := s.Open(); err != nil {
 		l.Fatal(err)
 	}
 
-	api.NewServer(c, l, store).Start()
+	// Starting the server.
+	if err := api.NewServer(l, c, s).Start(); err != nil {
+		l.Fatal(err)
+	}
 }

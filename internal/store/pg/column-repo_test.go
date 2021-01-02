@@ -19,34 +19,41 @@ func TestColumnRepo_GetByProjectID(t *testing.T) {
 
 	testcases := []struct {
 		name       string
-		mock       func()
+		mock       func([]model.Column)
+		projectID  int
 		expColumns []model.Column
 		expError   error
 	}{
 		{
-			name: "OK, columns are retrieved",
-			mock: func() {
-				rows := sqlmock.NewRows([]string{"id", "name", "index", "project_id"}).AddRow(
-					1, "Column 1", 1, 1,
+			name: "columns are retrieved",
+			mock: func(cs []model.Column) {
+				rows := sqlmock.NewRows([]string{"id", "name", "description"}).AddRow(
+					1, "Project 1", "",
 				)
+				mock.ExpectQuery("SELECT (.+) FROM projects WHERE id = (.+);").WillReturnRows(rows)
+
+				rows = sqlmock.NewRows([]string{"id", "name", "index", "project_id"})
+				for _, c := range cs {
+					rows = rows.AddRow(c.ID, c.Name, c.Index, c.ProjectID)
+				}
 				mock.ExpectQuery("SELECT (.+) FROM columns WHERE project_id = (.+);").WillReturnRows(rows)
 			},
+			projectID: 1,
 			expColumns: []model.Column{
 				model.Column{ID: 1, Name: "Column 1", Index: 1, ProjectID: 1},
+				model.Column{ID: 2, Name: "Column 2", Index: 2, ProjectID: 1},
 			},
 			expError: nil,
 		},
 	}
 
 	for _, tc := range testcases {
-		tc.mock()
+		tc.mock(tc.expColumns)
 
-		cs, err := r.GetByProjectID(1)
+		cs, err := r.GetByProjectID(tc.projectID)
 
 		assert.Equal(t, tc.expError, err)
-		for i := range cs {
-			assert.Equal(t, tc.expColumns[i], cs[i])
-		}
+		assert.Equal(t, tc.expColumns, cs)
 	}
 }
 
@@ -66,10 +73,10 @@ func TestColumnRepo_Create(t *testing.T) {
 		expError  error
 	}{
 		{
-			name: "OK, column is created",
+			name: "column is created",
 			mock: func(c model.Column) {
 				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
-				mock.ExpectQuery("INSERT INTO columns (.+) VALUES (.+)").WithArgs(
+				mock.ExpectQuery("INSERT INTO columns (.+) VALUES (.+);").WithArgs(
 					c.Name, c.Index, c.ProjectID,
 				).WillReturnRows(rows)
 			},
@@ -105,10 +112,10 @@ func TestColumnRepo_GetByID(t *testing.T) {
 		expError  error
 	}{
 		{
-			name: "OK, column is retrieved",
+			name: "column is retrieved",
 			mock: func(c model.Column) {
 				rows := sqlmock.NewRows([]string{"id", "name", "index", "project_id"}).AddRow(
-					1, "Column 1", 1, 1,
+					c.ID, c.Name, c.Index, c.ProjectID,
 				)
 				mock.ExpectQuery("SELECT (.+) FROM columns WHERE (.+);").WithArgs(
 					c.ID,
@@ -146,12 +153,12 @@ func TestColumnRepo_GetByIndexAndProjectID(t *testing.T) {
 		expError  error
 	}{
 		{
-			name: "OK, column is retrieved",
+			name: "column is retrieved by index and project ID",
 			mock: func(c model.Column) {
 				rows := sqlmock.NewRows([]string{"id", "name", "index", "project_id"}).AddRow(
-					1, "Column 1", 1, 1,
+					c.ID, c.Name, c.Index, c.ProjectID,
 				)
-				mock.ExpectQuery("SELECT (.+) FROM columns WHERE (.+);").WithArgs(
+				mock.ExpectQuery("SELECT (.+) FROM columns WHERE index = (.+) AND project_id = (.+);").WithArgs(
 					c.Index, c.ProjectID,
 				).WillReturnRows(rows)
 			},
@@ -187,11 +194,11 @@ func TestColumnRepo_Update(t *testing.T) {
 		expError  error
 	}{
 		{
-			name: "OK, column is updated",
+			name: "column is updated",
 			mock: func(c model.Column) {
-				mock.ExpectExec("UPDATE columns SET (.+) WHERE (.+)").WithArgs(
-					c.Name, c.Index, c.ID,
-				).WillReturnResult(sqlmock.NewResult(0, 1))
+				mock.ExpectExec("UPDATE columns SET (.+) WHERE id = (.+);").WithArgs(
+					c.Name, c.Index, c.ProjectID, c.ID,
+				).WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			column:    model.Column{ID: 1, Name: "Column 1", Index: 1, ProjectID: 1},
 			expColumn: model.Column{ID: 1, Name: "Column 1", Index: 1, ProjectID: 1},
@@ -224,11 +231,11 @@ func TestColumnRepo_Delete(t *testing.T) {
 		expError error
 	}{
 		{
-			name: "OK, column is deleted",
+			name: "column is deleted",
 			mock: func(c model.Column) {
-				mock.ExpectExec("DELETE FROM columns WHERE (.+)").WithArgs(
+				mock.ExpectExec("DELETE FROM columns WHERE id = (.+);").WithArgs(
 					c.ID,
-				).WillReturnResult(sqlmock.NewResult(0, 1))
+				).WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			column:   model.Column{ID: 1, Name: "Column 1", Index: 1, ProjectID: 1},
 			expError: nil,

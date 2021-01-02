@@ -7,21 +7,23 @@ import (
 	"github.com/imarrche/tasker/internal/store"
 )
 
-// commentRepo the comment repository for in memory store.
+// commentRepo is the comment repository for in memory store.
 type commentRepo struct {
 	db *inMemoryDb
 	m  sync.RWMutex
 }
 
 // newCommentRepo creates and returns a new commentRepo instance.
-func newCommentRepo(db *inMemoryDb) *commentRepo {
-	return &commentRepo{db: db}
-}
+func newCommentRepo(db *inMemoryDb) *commentRepo { return &commentRepo{db: db} }
 
 // GetByTaskID returns all comments with specific task ID.
 func (r *commentRepo) GetByTaskID(id int) ([]model.Comment, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
+
+	if _, ok := r.db.tasks[id]; !ok {
+		return nil, store.ErrNotFound
+	}
 
 	cs := []model.Comment{}
 	for _, c := range r.db.comments {
@@ -38,13 +40,17 @@ func (r *commentRepo) Create(c model.Comment) (model.Comment, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
+	if _, ok := r.db.tasks[c.TaskID]; !ok {
+		return model.Comment{}, store.ErrDbQuery
+	}
+
 	c.ID = len(r.db.comments) + 1
 	r.db.comments[c.ID] = c
 
 	return c, nil
 }
 
-// GetByID returns a comment with specific ID.
+// GetByID returns the comment with specific ID.
 func (r *commentRepo) GetByID(id int) (model.Comment, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
@@ -56,18 +62,21 @@ func (r *commentRepo) GetByID(id int) (model.Comment, error) {
 	return model.Comment{}, store.ErrNotFound
 }
 
-// Update updates a comment.
+// Update updates the comment.
 func (r *commentRepo) Update(c model.Comment) (model.Comment, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if comment, ok := r.db.comments[c.ID]; ok {
-		comment.Text = c.Text
-		r.db.comments[comment.ID] = comment
-		return comment, nil
+	if _, ok := r.db.comments[c.ID]; !ok {
+		return model.Comment{}, store.ErrNotFound
+	}
+	if _, ok := r.db.tasks[c.TaskID]; !ok {
+		return model.Comment{}, store.ErrDbQuery
 	}
 
-	return model.Comment{}, store.ErrNotFound
+	r.db.comments[c.ID] = c
+
+	return c, nil
 }
 
 // DeleteByID deletes the comment with specific ID.
@@ -80,5 +89,6 @@ func (r *commentRepo) DeleteByID(id int) error {
 	}
 
 	delete(r.db.comments, id)
+
 	return nil
 }

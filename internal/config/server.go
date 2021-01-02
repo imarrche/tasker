@@ -1,6 +1,6 @@
 package config
 
-// Server is the config that keeps all server related settings.
+// Server is the config for REST API server.
 type Server struct {
 	Addr string
 }

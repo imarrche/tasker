@@ -62,16 +62,16 @@ func (s *columnService) GetByID(id int) (model.Column, error) {
 
 // Update updates a column.
 func (s *columnService) Update(c model.Column) (model.Column, error) {
-	if err := s.Validate(c); err != nil {
-		return model.Column{}, err
-	}
-
 	column, err := s.store.Columns().GetByID(c.ID)
 	if err != nil {
 		return model.Column{}, err
 	}
 
 	column.Name = c.Name
+
+	if err := s.Validate(column); err != nil {
+		return model.Column{}, err
+	}
 
 	return s.store.Columns().Update(column)
 }

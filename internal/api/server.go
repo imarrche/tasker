@@ -28,7 +28,7 @@ type Server struct {
 }
 
 // NewServer creates a new Server instance.
-func NewServer(c *config.Config, l *log.Logger, store store.Store) *Server {
+func NewServer(l *log.Logger, c *config.Config, store store.Store) *Server {
 	r := mux.NewRouter()
 	service := web.NewService(store)
 
@@ -47,7 +47,7 @@ func NewTestServer() *Server {
 }
 
 // Start starts the server.
-func (s *Server) Start() {
+func (s *Server) Start() error {
 	// Initializing HTTP server.
 	server := &http.Server{
 		Addr:    s.config.Addr,
@@ -83,6 +83,8 @@ func (s *Server) Start() {
 	}
 
 	s.l.Println("server shutted down gracefully")
+
+	return nil
 }
 
 func (s *Server) configureRouter() {

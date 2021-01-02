@@ -20,6 +20,10 @@ func newCommentService(s store.Store) *commentService {
 
 // GetByTaskID returns all comments with specific task ID sorted by creation time.
 func (s *commentService) GetByTaskID(id int) ([]model.Comment, error) {
+	if _, err := s.store.Tasks().GetByID(id); err != nil {
+		return nil, err
+	}
+
 	cs, err := s.store.Comments().GetByTaskID(id)
 	if err != nil {
 		return nil, err

@@ -195,8 +195,13 @@ func TestColumnService_Update(t *testing.T) {
 			expError:  nil,
 		},
 		{
-			name:      "Column doesn't pass validation",
-			mock:      func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {},
+			name: "Column doesn't pass validation",
+			mock: func(s *mock_store.MockStore, c *gomock.Controller, column model.Column) {
+				cr := mock_store.NewMockColumnRepo(c)
+
+				cr.EXPECT().GetByID(column.ID).Return(column, nil)
+				s.EXPECT().Columns().Return(cr)
+			},
 			column:    model.Column{ID: 1},
 			expColumn: model.Column{},
 			expError:  ErrNameIsRequired,
