@@ -15,9 +15,7 @@ type Service struct {
 }
 
 // NewService creates and returns a new Service instance.
-func NewService(s store.Store) *Service {
-	return &Service{store: s}
-}
+func NewService(s store.Store) *Service { return &Service{store: s} }
 
 // Projects returns the project service.
 func (s *Service) Projects() service.ProjectService {

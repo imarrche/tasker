@@ -18,12 +18,9 @@ func newCommentService(s store.Store) *commentService {
 	return &commentService{store: s}
 }
 
-// GetByTaskID returns all comments with specific task ID sorted by creation time.
+// GetByTaskID returns all comments with specific task ID sorted by creation time
+// (from newest to oldest).
 func (s *commentService) GetByTaskID(id int) ([]model.Comment, error) {
-	if _, err := s.store.Tasks().GetByID(id); err != nil {
-		return nil, err
-	}
-
 	cs, err := s.store.Comments().GetByTaskID(id)
 	if err != nil {
 		return nil, err
@@ -38,14 +35,10 @@ func (s *commentService) GetByTaskID(id int) ([]model.Comment, error) {
 
 // Create creates a new comment.
 func (s *commentService) Create(c model.Comment) (model.Comment, error) {
+	c.CreatedAt = time.Now()
 	if err := s.Validate(c); err != nil {
 		return model.Comment{}, err
 	}
-	if _, err := s.store.Tasks().GetByID(c.TaskID); err != nil {
-		return model.Comment{}, err
-	}
-
-	c.CreatedAt = time.Now()
 
 	return s.store.Comments().Create(c)
 }
@@ -57,26 +50,21 @@ func (s *commentService) GetByID(id int) (model.Comment, error) {
 
 // Update updates a comment.
 func (s *commentService) Update(c model.Comment) (model.Comment, error) {
-	if err := s.Validate(c); err != nil {
-		return model.Comment{}, err
-	}
-
 	comment, err := s.store.Comments().GetByID(c.ID)
 	if err != nil {
 		return model.Comment{}, err
 	}
 
 	comment.Text = c.Text
+	if err := s.Validate(comment); err != nil {
+		return model.Comment{}, err
+	}
 
 	return s.store.Comments().Update(comment)
 }
 
 // DeleteByID deletes the comment with specific ID.
 func (s *commentService) DeleteByID(id int) error {
-	if _, err := s.store.Comments().GetByID(id); err != nil {
-		return err
-	}
-
 	return s.store.Comments().DeleteByID(id)
 }
 

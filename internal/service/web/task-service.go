@@ -19,10 +19,6 @@ func newTaskService(s store.Store) *taskService {
 
 // GetByColumnID returns all tasks with specific column ID sorted by index.
 func (s *taskService) GetByColumnID(id int) ([]model.Task, error) {
-	if _, err := s.store.Columns().GetByID(id); err != nil {
-		return nil, err
-	}
-
 	ts, err := s.store.Tasks().GetByColumnID(id)
 	if err != nil {
 		return nil, err
@@ -57,10 +53,6 @@ func (s *taskService) GetByID(id int) (model.Task, error) {
 
 // Update updates a task.
 func (s *taskService) Update(t model.Task) (model.Task, error) {
-	if err := s.Validate(t); err != nil {
-		return model.Task{}, err
-	}
-
 	task, err := s.store.Tasks().GetByID(t.ID)
 	if err != nil {
 		return model.Task{}, err
@@ -68,10 +60,14 @@ func (s *taskService) Update(t model.Task) (model.Task, error) {
 
 	task.Name = t.Name
 	task.Description = t.Description
+	if err := s.Validate(task); err != nil {
+		return model.Task{}, err
+	}
 
 	return s.store.Tasks().Update(task)
 }
 
+// MoveToColumnID moves the task with specific ID to the left/right column.
 func (s *taskService) MoveToColumnByID(id int, left bool) error {
 	t, err := s.store.Tasks().GetByID(id)
 	if err != nil {
@@ -114,6 +110,7 @@ func (s *taskService) MoveToColumnByID(id int, left bool) error {
 	return err
 }
 
+// MoveByID moves the task with specific ID up/down.
 func (s *taskService) MoveByID(id int, up bool) error {
 	t, err := s.store.Tasks().GetByID(id)
 	if err != nil {
