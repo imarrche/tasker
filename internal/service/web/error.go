@@ -16,5 +16,23 @@ var (
 	// ErrColumnAlreadyExists is thrown when column with provided name already exists.
 	ErrColumnAlreadyExists = errors.New("column already exists")
 	// ErrLastColumn is thrown when deleting last project's column.
-	ErrLastColumn = errors.New("last column cannot be deleted")
+	ErrLastColumn = errors.New("last column can't be deleted")
+	// ErrInvalidMove is thrown when model is moved to invalid position.
+	ErrInvalidMove = errors.New("move can't be performed")
 )
+
+// IsValidationError checks whether error is validation related.
+func IsValidationError(err error) bool {
+	switch err {
+	case ErrNameIsRequired, ErrNameIsTooLong:
+		return true
+	case ErrDescriptionIsTooLong:
+		return true
+	case ErrTextIsRequired, ErrTextIsTooLong:
+		return true
+	case ErrColumnAlreadyExists:
+		return true
+	default:
+		return false
+	}
+}

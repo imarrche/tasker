@@ -91,7 +91,7 @@ func (r *columnRepo) GetByIndexAndProjectID(index, id int) (model.Column, error)
 
 // Update updates the column.
 func (r *columnRepo) Update(c model.Column) (model.Column, error) {
-	query := "UPDATE columns SET name = $1, index = $2, project_id = $3 WHERE id = $3;"
+	query := "UPDATE columns SET name = $1, index = $2, project_id = $3 WHERE id = $4;"
 	res, err := r.db.Exec(query, c.Name, c.Index, c.ProjectID, c.ID)
 
 	if err != nil {

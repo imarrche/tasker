@@ -83,7 +83,9 @@ func (s *taskService) MoveToColumnByID(id int, left bool) error {
 		nextIdx = c.Index - 1
 	}
 	nextColumn, err := s.store.Columns().GetByIndexAndProjectID(nextIdx, c.ProjectID)
-	if err != nil {
+	if err == store.ErrNotFound {
+		return ErrInvalidMove
+	} else if err != nil {
 		return err
 	}
 	nextColumnTasks, err := s.store.Tasks().GetByColumnID(nextColumn.ID)
@@ -122,7 +124,9 @@ func (s *taskService) MoveByID(id int, up bool) error {
 		nextIdx = t.Index - 1
 	}
 	nextTask, err := s.store.Tasks().GetByIndexAndColumnID(nextIdx, t.ColumnID)
-	if err != nil {
+	if err == store.ErrNotFound {
+		return ErrInvalidMove
+	} else if err != nil {
 		return err
 	}
 

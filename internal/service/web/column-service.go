@@ -78,7 +78,9 @@ func (s *columnService) MoveByID(id int, left bool) error {
 		nextIdx = c.Index - 1
 	}
 	nextColumn, err := s.store.Columns().GetByIndexAndProjectID(nextIdx, c.ProjectID)
-	if err != nil {
+	if err == store.ErrNotFound {
+		return ErrInvalidMove
+	} else if err != nil {
 		return err
 	}
 
@@ -165,7 +167,7 @@ func (s *columnService) Validate(c model.Column) error {
 		return err
 	}
 	for _, column := range cs {
-		if column.Name == c.Name {
+		if column.Name == c.Name && column.ID != c.ID {
 			return ErrColumnAlreadyExists
 		}
 	}
