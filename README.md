@@ -8,7 +8,7 @@ Tasker is a simple Trello-like project management service.
 
 Back-end (REST API) part of the task management application (like Trello) with no authentication and authorization required.
 
-The main entity is a Project (or Board) that always has its name and contains multiple Columns.
+The main entity is a Project that always has its name and contains multiple Columns.
 
 A Column has name, contains Tasks and represents their status.
 When a Project created, “default” Column is created also. Columns can be moved left or right.
