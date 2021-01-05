@@ -3,3 +3,6 @@ build/
 
 # Testing related.
 coverage.html
+
+# Environment related.
+.env

@@ -37,9 +37,11 @@ func (s *columnService) Create(c model.Column) (model.Column, error) {
 		return model.Column{}, err
 	}
 
-	if _, err := s.store.Projects().GetByID(c.ProjectID); err != nil {
+	cs, err := s.store.Columns().GetByProjectID(c.ProjectID)
+	if err != nil {
 		return model.Column{}, err
 	}
+	c.Index = len(cs) + 1
 
 	return s.store.Columns().Create(c)
 }
@@ -51,14 +53,20 @@ func (s *columnService) GetByID(id int) (model.Column, error) {
 
 // Update updates a column.
 func (s *columnService) Update(c model.Column) (model.Column, error) {
-	if err := s.Validate(c); err != nil {
+	column, err := s.store.Columns().GetByID(c.ID)
+	if err != nil {
 		return model.Column{}, err
 	}
 
-	return s.store.Columns().Update(c)
+	column.Name = c.Name
+	if err := s.Validate(column); err != nil {
+		return model.Column{}, err
+	}
+
+	return s.store.Columns().Update(column)
 }
 
-// MoveByID moves the column with specific ID to left/right.
+// MoveByID moves the column with specific ID left/right.
 func (s *columnService) MoveByID(id int, left bool) error {
 	c, err := s.store.Columns().GetByID(id)
 	if err != nil {
@@ -70,7 +78,9 @@ func (s *columnService) MoveByID(id int, left bool) error {
 		nextIdx = c.Index - 1
 	}
 	nextColumn, err := s.store.Columns().GetByIndexAndProjectID(nextIdx, c.ProjectID)
-	if err != nil {
+	if err == store.ErrNotFound {
+		return ErrInvalidMove
+	} else if err != nil {
 		return err
 	}
 
@@ -84,8 +94,8 @@ func (s *columnService) MoveByID(id int, left bool) error {
 	if _, err = s.store.Columns().Update(nextColumn); err != nil {
 		return err
 	}
-
 	_, err = s.store.Columns().Update(c)
+
 	return err
 }
 
@@ -157,7 +167,7 @@ func (s *columnService) Validate(c model.Column) error {
 		return err
 	}
 	for _, column := range cs {
-		if column.Name == c.Name {
+		if column.Name == c.Name && column.ID != c.ID {
 			return ErrColumnAlreadyExists
 		}
 	}

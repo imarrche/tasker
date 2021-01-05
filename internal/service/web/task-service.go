@@ -37,9 +37,11 @@ func (s *taskService) Create(t model.Task) (model.Task, error) {
 		return model.Task{}, err
 	}
 
-	if _, err := s.store.Columns().GetByID(t.ColumnID); err != nil {
+	ts, err := s.store.Tasks().GetByColumnID(t.ColumnID)
+	if err != nil {
 		return model.Task{}, err
 	}
+	t.Index = len(ts) + 1
 
 	return s.store.Tasks().Create(t)
 }
@@ -51,13 +53,21 @@ func (s *taskService) GetByID(id int) (model.Task, error) {
 
 // Update updates a task.
 func (s *taskService) Update(t model.Task) (model.Task, error) {
-	if err := s.Validate(t); err != nil {
+	task, err := s.store.Tasks().GetByID(t.ID)
+	if err != nil {
 		return model.Task{}, err
 	}
 
-	return s.store.Tasks().Update(t)
+	task.Name = t.Name
+	task.Description = t.Description
+	if err := s.Validate(task); err != nil {
+		return model.Task{}, err
+	}
+
+	return s.store.Tasks().Update(task)
 }
 
+// MoveToColumnID moves the task with specific ID to the left/right column.
 func (s *taskService) MoveToColumnByID(id int, left bool) error {
 	t, err := s.store.Tasks().GetByID(id)
 	if err != nil {
@@ -73,7 +83,9 @@ func (s *taskService) MoveToColumnByID(id int, left bool) error {
 		nextIdx = c.Index - 1
 	}
 	nextColumn, err := s.store.Columns().GetByIndexAndProjectID(nextIdx, c.ProjectID)
-	if err != nil {
+	if err == store.ErrNotFound {
+		return ErrInvalidMove
+	} else if err != nil {
 		return err
 	}
 	nextColumnTasks, err := s.store.Tasks().GetByColumnID(nextColumn.ID)
@@ -100,6 +112,7 @@ func (s *taskService) MoveToColumnByID(id int, left bool) error {
 	return err
 }
 
+// MoveByID moves the task with specific ID up/down.
 func (s *taskService) MoveByID(id int, up bool) error {
 	t, err := s.store.Tasks().GetByID(id)
 	if err != nil {
@@ -111,7 +124,9 @@ func (s *taskService) MoveByID(id int, up bool) error {
 		nextIdx = t.Index - 1
 	}
 	nextTask, err := s.store.Tasks().GetByIndexAndColumnID(nextIdx, t.ColumnID)
-	if err != nil {
+	if err == store.ErrNotFound {
+		return ErrInvalidMove
+	} else if err != nil {
 		return err
 	}
 

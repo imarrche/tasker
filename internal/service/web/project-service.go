@@ -59,11 +59,18 @@ func (s *projectService) GetByID(id int) (model.Project, error) {
 
 // Update updates a project.
 func (s *projectService) Update(p model.Project) (model.Project, error) {
-	if err := s.Validate(p); err != nil {
+	project, err := s.store.Projects().GetByID(p.ID)
+	if err != nil {
 		return model.Project{}, err
 	}
 
-	return s.store.Projects().Update(p)
+	project.Name = p.Name
+	project.Description = p.Description
+	if err := s.Validate(project); err != nil {
+		return model.Project{}, err
+	}
+
+	return s.store.Projects().Update(project)
 }
 
 // DeleteByID deletes the project with specific ID.

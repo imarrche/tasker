@@ -14,40 +14,40 @@ type taskRepo struct {
 }
 
 // newTaskRepo creates and returns a new taskRepo instance.
-func newTaskRepo(db *inMemoryDb) *taskRepo {
-	return &taskRepo{db: db}
-}
+func newTaskRepo(db *inMemoryDb) *taskRepo { return &taskRepo{db: db} }
 
 // GetByColumnID returns all tasks with specific column ID.
-func (r *taskRepo) GetByColumnID(id int) (tasks []model.Task, err error) {
+func (r *taskRepo) GetByColumnID(id int) ([]model.Task, error) {
 	r.m.RLock()
 	defer r.m.RUnlock()
 
+	if _, ok := r.db.columns[id]; !ok {
+		return nil, store.ErrNotFound
+	}
+
+	ts := []model.Task{}
 	for _, t := range r.db.tasks {
 		if t.ColumnID == id {
-			tasks = append(tasks, t)
+			ts = append(ts, t)
 		}
 	}
 
-	return tasks, err
+	return ts, nil
 }
 
 // Create creates and returns a new task.
-func (r *taskRepo) Create(task model.Task) (model.Task, error) {
+func (r *taskRepo) Create(t model.Task) (model.Task, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	task.ID = len(r.db.tasks) + 1
-	maxIdx := 0
-	for _, t := range r.db.tasks {
-		if t.ColumnID == task.ColumnID && maxIdx < t.Index {
-			maxIdx = t.Index
-		}
+	if _, ok := r.db.columns[t.ColumnID]; !ok {
+		return model.Task{}, store.ErrDbQuery
 	}
-	task.Index = maxIdx + 1
-	r.db.tasks[task.ID] = task
 
-	return task, nil
+	t.ID = len(r.db.tasks) + 1
+	r.db.tasks[t.ID] = t
+
+	return t, nil
 }
 
 // GetByID returns the task with specific ID.
@@ -81,20 +81,16 @@ func (r *taskRepo) Update(t model.Task) (model.Task, error) {
 	r.m.Lock()
 	defer r.m.Unlock()
 
-	if task, ok := r.db.tasks[t.ID]; ok {
-		task.Name = t.Name
-		task.Description = t.Description
-		if t.Index != 0 {
-			task.Index = t.Index
-		}
-		if t.ColumnID != 0 {
-			task.ColumnID = t.ColumnID
-		}
-		r.db.tasks[task.ID] = task
-		return task, nil
+	if _, ok := r.db.tasks[t.ID]; !ok {
+		return model.Task{}, store.ErrNotFound
+	}
+	if _, ok := r.db.columns[t.ColumnID]; !ok {
+		return model.Task{}, store.ErrDbQuery
 	}
 
-	return model.Task{}, store.ErrNotFound
+	r.db.tasks[t.ID] = t
+
+	return t, nil
 }
 
 // DeleteByID deletes the task with specific ID.
@@ -106,12 +102,12 @@ func (r *taskRepo) DeleteByID(id int) error {
 		return store.ErrNotFound
 	}
 
-	for cid, c := range r.db.comments {
-		if c.TaskID == id {
-			delete(r.db.comments, cid)
+	for commentID, comment := range r.db.comments {
+		if comment.TaskID == id {
+			delete(r.db.comments, commentID)
 		}
 	}
-
 	delete(r.db.tasks, id)
+
 	return nil
 }

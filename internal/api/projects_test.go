@@ -11,11 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/imarrche/tasker/internal/model"
-	"github.com/imarrche/tasker/internal/store/inmem"
 )
 
-func TestServer_V1ProjectList(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+func TestServer_ProjectList(t *testing.T) {
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -23,7 +22,7 @@ func TestServer_V1ProjectList(t *testing.T) {
 		expBody []model.Project
 	}{
 		{
-			name:    "Ok, project list is retrieved",
+			name:    "project list is retrieved",
 			expCode: http.StatusOK,
 			expBody: []model.Project{
 				model.Project{ID: 1, Name: "Project 1"},
@@ -48,8 +47,8 @@ func TestServer_V1ProjectList(t *testing.T) {
 	}
 }
 
-func TestServer_V1ProjectCreate(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+func TestServer_ProjectCreate(t *testing.T) {
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
@@ -58,10 +57,10 @@ func TestServer_V1ProjectCreate(t *testing.T) {
 		expBody model.Project
 	}{
 		{
-			name:    "Ok, project is created",
-			project: model.Project{Name: "Project 3"},
+			name:    "project is created",
+			project: model.Project{Name: "Project 3", Description: "Project description."},
 			expCode: http.StatusCreated,
-			expBody: model.Project{ID: 3, Name: "Project 3"},
+			expBody: model.Project{ID: 3, Name: "Project 3", Description: "Project description."},
 		},
 	}
 
@@ -83,18 +82,18 @@ func TestServer_V1ProjectCreate(t *testing.T) {
 	}
 }
 
-func TestServer_V1ProjectDetail(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+func TestServer_ProjectDetail(t *testing.T) {
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
-		id      int
+		id      string
 		expCode int
 		expBody model.Project
 	}{
 		{
-			name:    "Ok, project is retrieved",
-			id:      1,
+			name:    "project is retrieved",
+			id:      "1",
 			expCode: http.StatusOK,
 			expBody: model.Project{ID: 1, Name: "Project 1"},
 		},
@@ -104,9 +103,7 @@ func TestServer_V1ProjectDetail(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			r, _ := http.NewRequest(http.MethodGet, "/api/v1/projects/project_id", nil)
-			r = mux.SetURLVars(r, map[string]string{
-				"project_id": "1",
-			})
+			r = mux.SetURLVars(r, map[string]string{"project_id": tc.id})
 
 			s.projectDetail().ServeHTTP(w, r)
 			var p model.Project
@@ -119,20 +116,22 @@ func TestServer_V1ProjectDetail(t *testing.T) {
 	}
 }
 
-func TestServer_V1ProjectUpdate(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+func TestServer_ProjectUpdate(t *testing.T) {
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
+		id      string
 		project model.Project
 		expCode int
 		expBody model.Project
 	}{
 		{
-			name:    "Ok, project is updated",
-			project: model.Project{Name: "Updated project"},
+			name:    "project is updated",
+			id:      "1",
+			project: model.Project{Name: "Updated project", Description: "Updated description"},
 			expCode: http.StatusOK,
-			expBody: model.Project{ID: 1, Name: "Updated project"},
+			expBody: model.Project{ID: 1, Name: "Updated project", Description: "Updated description"},
 		},
 	}
 
@@ -142,9 +141,7 @@ func TestServer_V1ProjectUpdate(t *testing.T) {
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.project)
 			r, _ := http.NewRequest(http.MethodPut, "/api/v1/projects/project_id", b)
-			r = mux.SetURLVars(r, map[string]string{
-				"project_id": "1",
-			})
+			r = mux.SetURLVars(r, map[string]string{"project_id": tc.id})
 
 			s.projectUpdate().ServeHTTP(w, r)
 			var p model.Project
@@ -157,17 +154,17 @@ func TestServer_V1ProjectUpdate(t *testing.T) {
 	}
 }
 
-func TestServer_V1ProjectDelete(t *testing.T) {
-	s := NewServer(inmem.TestStoreWithFixtures())
+func TestServer_ProjectDelete(t *testing.T) {
+	s := NewTestServer()
 
 	testcases := []struct {
 		name    string
-		id      int
+		id      string
 		expCode int
 	}{
 		{
-			name:    "Ok, project is deleted",
-			id:      1,
+			name:    "project is deleted",
+			id:      "1",
 			expCode: http.StatusNoContent,
 		},
 	}
@@ -176,9 +173,7 @@ func TestServer_V1ProjectDelete(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
 			r, _ := http.NewRequest(http.MethodDelete, "/api/v1/projects/project_id", nil)
-			r = mux.SetURLVars(r, map[string]string{
-				"project_id": "1",
-			})
+			r = mux.SetURLVars(r, map[string]string{"project_id": tc.id})
 
 			s.projectDelete().ServeHTTP(w, r)
 

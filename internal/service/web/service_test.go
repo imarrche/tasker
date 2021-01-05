@@ -11,40 +11,36 @@ import (
 
 func TestService_Projects(t *testing.T) {
 	c := gomock.NewController(t)
-	c.Finish()
+	defer c.Finish()
 
 	store := mock_store.NewMockStore(c)
-	s := NewService(store)
 
-	assert.Equal(t, newProjectService(store), s.Projects())
+	assert.Equal(t, newProjectService(store), NewService(store).Projects())
 }
 
 func TestService_Columns(t *testing.T) {
 	c := gomock.NewController(t)
-	c.Finish()
+	defer c.Finish()
 
 	store := mock_store.NewMockStore(c)
-	s := NewService(store)
 
-	assert.Equal(t, newColumnService(store), s.Columns())
+	assert.Equal(t, newColumnService(store), NewService(store).Columns())
 }
 
 func TestService_Tasks(t *testing.T) {
 	c := gomock.NewController(t)
-	c.Finish()
+	defer c.Finish()
 
 	store := mock_store.NewMockStore(c)
-	s := NewService(store)
 
-	assert.Equal(t, newTaskService(store), s.Tasks())
+	assert.Equal(t, newTaskService(store), NewService(store).Tasks())
 }
 
 func TestService_Comments(t *testing.T) {
 	c := gomock.NewController(t)
-	c.Finish()
+	defer c.Finish()
 
 	store := mock_store.NewMockStore(c)
-	s := NewService(store)
 
-	assert.Equal(t, newCommentService(store), s.Comments())
+	assert.Equal(t, newCommentService(store), NewService(store).Comments())
 }
