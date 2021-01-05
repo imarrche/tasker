@@ -19,21 +19,34 @@ A Task can have Comments that could contain questions or Task clarification info
 
 API docs is Postman collection in `api` folder.
 
+Deployed version: <http://167.99.253.9:8080/api/v1>
+
 ## Run instructions
 
-1) Spin up `postgres` container.
+1) Create `.env` file for server configuration. For example:
+```bash
+SERVER_ADDR=:8080
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=123
+POSTGRES_DBNAME=tasker
+POSTGRES_SSLMODE=disable
+```
+
+2) Spin up `postgres` container.
 ```bash
 $ docker-compose up postgres
 ```
 
-2) Create database.
+3) Create database.
 ```bash
 $ docker-compose exec -it postgres bash
 $ psql -U postgres
 $ CREATE DATABASE tasker;
 ```
 
-3) Spin up `tasker` container.
+4) Spin up `tasker` container.
 ```bash
 $ docker-compose up tasker
 ```
