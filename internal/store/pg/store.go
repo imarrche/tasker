@@ -4,7 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/lib/pq" // PostgreSQL driver.
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file" //
+	_ "github.com/lib/pq"                                // PostgreSQL driver.
 
 	"github.com/imarrche/tasker/internal/config"
 	"github.com/imarrche/tasker/internal/store"
@@ -42,6 +45,16 @@ func (s *Store) Open() error {
 	}
 
 	s.db = db
+
+	// Migrating.
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	m, err := migrate.NewWithDatabaseInstance("file://schema", "postgres", driver)
+	if err != nil {
+		return err
+	}
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return err
+	}
 
 	return nil
 }
