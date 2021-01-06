@@ -41,7 +41,7 @@ $ docker-compose up postgres
 
 3) Create database.
 ```bash
-$ docker-compose exec -it postgres bash
+$ docker exec -it postgres bash
 $ psql -U postgres
 $ CREATE DATABASE tasker;
 ```

@@ -25,8 +25,8 @@ func TestServer_ProjectList(t *testing.T) {
 			name:    "project list is retrieved",
 			expCode: http.StatusOK,
 			expBody: []model.Project{
-				model.Project{ID: 1, Name: "Project 1"},
-				model.Project{ID: 2, Name: "Project 2"},
+				{ID: 1, Name: "Project 1"},
+				{ID: 2, Name: "Project 2"},
 			},
 		},
 	}

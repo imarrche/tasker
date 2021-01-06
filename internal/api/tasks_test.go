@@ -27,8 +27,8 @@ func TestServer_TaskList(t *testing.T) {
 			columnID: "1",
 			expCode:  http.StatusOK,
 			expBody: []model.Task{
-				model.Task{ID: 1, Name: "Task 1", Index: 1, ColumnID: 1},
-				model.Task{ID: 2, Name: "Task 2", Index: 2, ColumnID: 1},
+				{ID: 1, Name: "Task 1", Index: 1, ColumnID: 1},
+				{ID: 2, Name: "Task 2", Index: 2, ColumnID: 1},
 			},
 		},
 	}

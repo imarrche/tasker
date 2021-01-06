@@ -30,14 +30,14 @@ func TestColumnService_GetByProjectID(t *testing.T) {
 			},
 			projectID: 1,
 			columns: []model.Column{
-				model.Column{ID: 1, Name: "C1", Index: 3, ProjectID: 1},
-				model.Column{ID: 2, Name: "C2", Index: 2, ProjectID: 1},
-				model.Column{ID: 3, Name: "C3", Index: 1, ProjectID: 1},
+				{ID: 1, Name: "C1", Index: 3, ProjectID: 1},
+				{ID: 2, Name: "C2", Index: 2, ProjectID: 1},
+				{ID: 3, Name: "C3", Index: 1, ProjectID: 1},
 			},
 			expColumns: []model.Column{
-				model.Column{ID: 3, Name: "C3", Index: 1, ProjectID: 1},
-				model.Column{ID: 2, Name: "C2", Index: 2, ProjectID: 1},
-				model.Column{ID: 1, Name: "C1", Index: 3, ProjectID: 1},
+				{ID: 3, Name: "C3", Index: 1, ProjectID: 1},
+				{ID: 2, Name: "C2", Index: 2, ProjectID: 1},
+				{ID: 1, Name: "C1", Index: 3, ProjectID: 1},
 			},
 			expError: nil,
 		},
@@ -269,16 +269,16 @@ func TestColumnService_DeleteByID(t *testing.T) {
 				cr.EXPECT().GetByProjectID(column.ProjectID).Return(
 					[]model.Column{
 						column,
-						model.Column{ID: 2, Name: "Column 2", Index: 2, ProjectID: column.ProjectID},
+						{ID: 2, Name: "Column 2", Index: 2, ProjectID: column.ProjectID},
 					},
 					nil,
 				)
 				tr.EXPECT().GetByColumnID(1).Return(
-					[]model.Task{model.Task{ID: 1, Name: "Task 1", Index: 1, ColumnID: 1}},
+					[]model.Task{{ID: 1, Name: "Task 1", Index: 1, ColumnID: 1}},
 					nil,
 				)
 				tr.EXPECT().GetByColumnID(2).Return(
-					[]model.Task{model.Task{ID: 2, Name: "Task 2", Index: 1, ColumnID: 2}},
+					[]model.Task{{ID: 2, Name: "Task 2", Index: 1, ColumnID: 2}},
 					nil,
 				)
 				tr.EXPECT().Update(model.Task{ID: 1, Name: "Task 1", Index: 2, ColumnID: 2}).Return(
@@ -363,7 +363,7 @@ func TestColumnService_Validate(t *testing.T) {
 
 				cr.EXPECT().GetByProjectID(column.ProjectID).Return(
 					[]model.Column{
-						model.Column{ID: 1, Name: column.Name, Index: 1, ProjectID: column.ProjectID},
+						{ID: 1, Name: column.Name, Index: 1, ProjectID: column.ProjectID},
 					},
 					nil,
 				)

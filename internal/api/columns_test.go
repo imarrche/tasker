@@ -27,8 +27,8 @@ func TestServer_ColumnList(t *testing.T) {
 			projectID: "1",
 			expCode:   http.StatusOK,
 			expBody: []model.Column{
-				model.Column{ID: 1, Name: "Column 1", Index: 1, ProjectID: 1},
-				model.Column{ID: 2, Name: "Column 2", Index: 2, ProjectID: 1},
+				{ID: 1, Name: "Column 1", Index: 1, ProjectID: 1},
+				{ID: 2, Name: "Column 2", Index: 2, ProjectID: 1},
 			},
 		},
 	}

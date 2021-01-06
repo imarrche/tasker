@@ -30,19 +30,19 @@ func TestCommentService_GetByTaskID(t *testing.T) {
 			},
 			taskID: 1,
 			comments: []model.Comment{
-				model.Comment{
+				{
 					ID:        1,
 					Text:      "C1",
 					CreatedAt: time.Date(2020, 12, 1, 0, 0, 0, 0, &time.Location{}),
 					TaskID:    1,
 				},
-				model.Comment{
+				{
 					ID:        2,
 					Text:      "C2",
 					CreatedAt: time.Date(2020, 12, 2, 0, 0, 0, 0, &time.Location{}),
 					TaskID:    1,
 				},
-				model.Comment{
+				{
 					ID:        3,
 					Text:      "C3",
 					CreatedAt: time.Date(2020, 12, 3, 0, 0, 0, 0, &time.Location{}),
@@ -50,19 +50,19 @@ func TestCommentService_GetByTaskID(t *testing.T) {
 				},
 			},
 			expComments: []model.Comment{
-				model.Comment{
+				{
 					ID:        3,
 					Text:      "C3",
 					CreatedAt: time.Date(2020, 12, 3, 0, 0, 0, 0, &time.Location{}),
 					TaskID:    1,
 				},
-				model.Comment{
+				{
 					ID:        2,
 					Text:      "C2",
 					CreatedAt: time.Date(2020, 12, 2, 0, 0, 0, 0, &time.Location{}),
 					TaskID:    1,
 				},
-				model.Comment{
+				{
 					ID:        1,
 					Text:      "C1",
 					CreatedAt: time.Date(2020, 12, 1, 0, 0, 0, 0, &time.Location{}),

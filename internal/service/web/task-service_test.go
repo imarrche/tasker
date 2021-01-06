@@ -28,14 +28,14 @@ func TestTaskService_GetByColumnID(t *testing.T) {
 				s.EXPECT().Tasks().Return(tr)
 			},
 			tasks: []model.Task{
-				model.Task{ID: 1, Index: 3, Name: "T1", ColumnID: 1},
-				model.Task{ID: 2, Index: 2, Name: "T2", ColumnID: 1},
-				model.Task{ID: 3, Index: 1, Name: "T3", ColumnID: 1},
+				{ID: 1, Index: 3, Name: "T1", ColumnID: 1},
+				{ID: 2, Index: 2, Name: "T2", ColumnID: 1},
+				{ID: 3, Index: 1, Name: "T3", ColumnID: 1},
 			},
 			expTasks: []model.Task{
-				model.Task{ID: 3, Index: 1, Name: "T3", ColumnID: 1},
-				model.Task{ID: 2, Index: 2, Name: "T2", ColumnID: 1},
-				model.Task{ID: 1, Index: 3, Name: "T1", ColumnID: 1},
+				{ID: 3, Index: 1, Name: "T3", ColumnID: 1},
+				{ID: 2, Index: 2, Name: "T2", ColumnID: 1},
+				{ID: 1, Index: 3, Name: "T1", ColumnID: 1},
 			},
 			expError: nil,
 		},
@@ -200,13 +200,12 @@ func TestTaskService_MoveToColumnByID(t *testing.T) {
 					nil,
 				)
 				tr.EXPECT().GetByColumnID(1).Return(
-					[]model.Task{model.Task{ID: 1, Name: "Task 1", Index: 1, ColumnID: 1}},
+					[]model.Task{{ID: 1, Name: "Task 1", Index: 1, ColumnID: 1}},
 					nil,
 				)
 				tr.EXPECT().GetByColumnID(task.ColumnID).Return(
 					[]model.Task{
-						task,
-						model.Task{ID: 3, Name: "Task 3", Index: 2, ColumnID: 2},
+						task, {ID: 3, Name: "Task 3", Index: 2, ColumnID: 2},
 					},
 					nil,
 				)
@@ -241,13 +240,12 @@ func TestTaskService_MoveToColumnByID(t *testing.T) {
 					nil,
 				)
 				tr.EXPECT().GetByColumnID(2).Return(
-					[]model.Task{model.Task{ID: 1, Name: "Task 1", Index: 1, ColumnID: 2}},
+					[]model.Task{{ID: 1, Name: "Task 1", Index: 1, ColumnID: 2}},
 					nil,
 				)
 				tr.EXPECT().GetByColumnID(task.ColumnID).Return(
 					[]model.Task{
-						task,
-						model.Task{ID: 3, Name: "Task 3", Index: 2, ColumnID: 1},
+						task, {ID: 3, Name: "Task 3", Index: 2, ColumnID: 1},
 					},
 					nil,
 				)
@@ -379,8 +377,7 @@ func TestTaskService_DeleteByID(t *testing.T) {
 				tr.EXPECT().GetByID(t.ID).Return(t, nil)
 				tr.EXPECT().GetByColumnID(t.ColumnID).Return(
 					[]model.Task{
-						t,
-						model.Task{ID: 2, Name: "Task 2", Index: 2, ColumnID: t.ColumnID}},
+						t, {ID: 2, Name: "Task 2", Index: 2, ColumnID: t.ColumnID}},
 					nil,
 				)
 				tr.EXPECT().Update(

@@ -27,14 +27,10 @@ func TestProjectService_GetAll(t *testing.T) {
 				s.EXPECT().Projects().Return(pr)
 			},
 			projects: []model.Project{
-				model.Project{ID: 1, Name: "C"},
-				model.Project{ID: 2, Name: "B"},
-				model.Project{ID: 3, Name: "A"},
+				{ID: 1, Name: "C"}, {ID: 2, Name: "B"}, {ID: 3, Name: "A"},
 			},
 			expProjects: []model.Project{
-				model.Project{ID: 3, Name: "A"},
-				model.Project{ID: 2, Name: "B"},
-				model.Project{ID: 1, Name: "C"},
+				{ID: 3, Name: "A"}, {ID: 2, Name: "B"}, {ID: 1, Name: "C"},
 			},
 			expError: nil,
 		},

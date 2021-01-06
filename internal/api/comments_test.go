@@ -27,7 +27,7 @@ func TestServer_CommentList(t *testing.T) {
 			taskID:  "1",
 			expCode: http.StatusOK,
 			expBody: []model.Comment{
-				model.Comment{ID: 1, Text: "Comment 1"}, model.Comment{ID: 2, Text: "Comment 2"},
+				{ID: 1, Text: "Comment 1"}, {ID: 2, Text: "Comment 2"},
 			},
 		},
 	}
