@@ -41,8 +41,8 @@ func TestCommentRepo_GetByTaskID(t *testing.T) {
 			},
 			taskID: 1,
 			expComments: []model.Comment{
-				model.Comment{ID: 1, Text: "Comment.", CreatedAt: time.Time{}, TaskID: 1},
-				model.Comment{ID: 2, Text: "Comment.", CreatedAt: time.Time{}, TaskID: 1},
+				{ID: 1, Text: "Comment.", CreatedAt: time.Time{}, TaskID: 1},
+				{ID: 2, Text: "Comment.", CreatedAt: time.Time{}, TaskID: 1},
 			},
 			expError: nil,
 		},

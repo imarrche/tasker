@@ -40,8 +40,8 @@ func TestTaskRepo_GetByColumnID(t *testing.T) {
 			},
 			columnID: 1,
 			expTasks: []model.Task{
-				model.Task{ID: 1, Name: "Task 1", Description: "", Index: 1, ColumnID: 1},
-				model.Task{ID: 2, Name: "Task 2", Description: "", Index: 2, ColumnID: 1},
+				{ID: 1, Name: "Task 1", Description: "", Index: 1, ColumnID: 1},
+				{ID: 2, Name: "Task 2", Description: "", Index: 2, ColumnID: 1},
 			},
 			expError: nil,
 		},

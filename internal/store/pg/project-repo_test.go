@@ -33,7 +33,7 @@ func TestProjectRepo_GetAll(t *testing.T) {
 				mock.ExpectQuery("SELECT (.+) FROM projects;").WillReturnRows(rows)
 			},
 			expProjects: []model.Project{
-				model.Project{ID: 1, Name: "Project 1"}, model.Project{ID: 2, Name: "Project 2"},
+				{ID: 1, Name: "Project 1"}, {ID: 2, Name: "Project 2"},
 			},
 			expError: nil,
 		},
