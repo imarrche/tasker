@@ -7,24 +7,37 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/imarrche/tasker/internal/model"
+	mock_service "github.com/imarrche/tasker/internal/service/mocks"
 )
 
 func TestServer_CommentList(t *testing.T) {
-	s := NewTestServer()
+	server := &Server{router: mux.NewRouter()}
+	server.configureRouter()
 
 	testcases := []struct {
-		name    string
-		taskID  string
-		expCode int
-		expBody []model.Comment
+		name     string
+		mock     func(*gomock.Controller, *mock_service.MockService, int, []model.Comment)
+		taskID   int
+		comments []model.Comment
+		expCode  int
+		expBody  []model.Comment
 	}{
 		{
-			name:    "comment list is retrieved",
-			taskID:  "1",
+			name: "comment list is retrieved",
+			mock: func(c *gomock.Controller, s *mock_service.MockService, tID int, comments []model.Comment) {
+				ts := mock_service.NewMockCommentService(c)
+				ts.EXPECT().GetByTaskID(tID).Return(comments, nil)
+				s.EXPECT().Comments().Return(ts)
+			},
+			taskID: 1,
+			comments: []model.Comment{
+				{ID: 1, Text: "Comment 1"}, {ID: 2, Text: "Comment 2"},
+			},
 			expCode: http.StatusOK,
 			expBody: []model.Comment{
 				{ID: 1, Text: "Comment 1"}, {ID: 2, Text: "Comment 2"},
@@ -34,11 +47,16 @@ func TestServer_CommentList(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodGet, "/api/v1/tasks/task_id/comments", nil)
-			r = mux.SetURLVars(r, map[string]string{"task_id": tc.taskID})
+			c := gomock.NewController(t)
+			defer c.Finish()
+			s := mock_service.NewMockService(c)
+			tc.mock(c, s, tc.taskID, tc.comments)
+			server.service = s
 
-			s.commentList().ServeHTTP(w, r)
+			w := httptest.NewRecorder()
+			r, _ := http.NewRequest(http.MethodGet, "/api/v1/tasks/1/comments", nil)
+
+			server.router.ServeHTTP(w, r)
 			var cs []model.Comment
 			err := json.NewDecoder(w.Body).Decode(&cs)
 
@@ -50,56 +68,75 @@ func TestServer_CommentList(t *testing.T) {
 }
 
 func TestServer_CommentCreate(t *testing.T) {
-	s := NewTestServer()
+	server := &Server{router: mux.NewRouter()}
+	server.configureRouter()
 
 	testcases := []struct {
 		name    string
-		taskID  string
+		mock    func(*gomock.Controller, *mock_service.MockService, int, model.Comment)
+		taskID  int
 		comment model.Comment
 		expCode int
 		expBody model.Comment
 	}{
 		{
-			name:    "comment is created",
-			taskID:  "1",
-			comment: model.Comment{Text: "Comment"},
+			name: "comment is created",
+			mock: func(c *gomock.Controller, s *mock_service.MockService, tID int, comment model.Comment) {
+				createdComment := model.Comment{ID: 1, Text: comment.Text, TaskID: comment.TaskID}
+				ts := mock_service.NewMockCommentService(c)
+				ts.EXPECT().Create(comment).Return(createdComment, nil)
+				s.EXPECT().Comments().Return(ts)
+			},
+			taskID:  1,
+			comment: model.Comment{Text: "Comment", TaskID: 1},
 			expCode: http.StatusCreated,
-			expBody: model.Comment{ID: 4, Text: "Comment"},
+			expBody: model.Comment{ID: 1, Text: "Comment", TaskID: 1},
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+			s := mock_service.NewMockService(c)
+			tc.mock(c, s, tc.taskID, tc.comment)
+			server.service = s
+
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.comment)
-			r, _ := http.NewRequest(http.MethodPost, "/api/v1/tasks/task_id/comments", b)
-			r = mux.SetURLVars(r, map[string]string{"task_id": tc.taskID})
+			r, _ := http.NewRequest(http.MethodPost, "/api/v1/tasks/1/comments", b)
 
-			s.commentCreate().ServeHTTP(w, r)
-			var c model.Comment
-			err := json.NewDecoder(w.Body).Decode(&c)
+			server.router.ServeHTTP(w, r)
+			var comment model.Comment
+			err := json.NewDecoder(w.Body).Decode(&comment)
 
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expCode, w.Code)
-			assert.Equal(t, tc.expBody.ID, c.ID)
-			assert.Equal(t, tc.expBody.Text, c.Text)
+			assert.Equal(t, tc.expBody, comment)
 		})
 	}
 }
 
 func TestServer_CommentDetail(t *testing.T) {
-	s := NewTestServer()
+	server := &Server{router: mux.NewRouter()}
+	server.configureRouter()
 
 	testcases := []struct {
 		name    string
-		id      string
+		mock    func(*gomock.Controller, *mock_service.MockService, model.Comment)
+		comment model.Comment
 		expCode int
 		expBody model.Comment
 	}{
 		{
-			name:    "comment is retrieved",
-			id:      "1",
+			name: "comment is retrieved",
+			mock: func(c *gomock.Controller, s *mock_service.MockService, comment model.Comment) {
+				ts := mock_service.NewMockCommentService(c)
+				ts.EXPECT().GetByID(comment.ID).Return(comment, nil)
+				s.EXPECT().Comments().Return(ts)
+			},
+			comment: model.Comment{ID: 1, Text: "Comment 1"},
 			expCode: http.StatusOK,
 			expBody: model.Comment{ID: 1, Text: "Comment 1"},
 		},
@@ -107,36 +144,45 @@ func TestServer_CommentDetail(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodPost, "/api/v1/comments/comment_id", nil)
-			r = mux.SetURLVars(r, map[string]string{"comment_id": tc.id})
+			c := gomock.NewController(t)
+			defer c.Finish()
+			s := mock_service.NewMockService(c)
+			tc.mock(c, s, tc.comment)
+			server.service = s
 
-			s.commentDetail().ServeHTTP(w, r)
-			var c model.Comment
-			err := json.NewDecoder(w.Body).Decode(&c)
+			w := httptest.NewRecorder()
+			r, _ := http.NewRequest(http.MethodGet, "/api/v1/comments/1", nil)
+
+			server.router.ServeHTTP(w, r)
+			var comment model.Comment
+			err := json.NewDecoder(w.Body).Decode(&comment)
 
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expCode, w.Code)
-			assert.Equal(t, tc.expBody.ID, c.ID)
-			assert.Equal(t, tc.expBody.Text, c.Text)
+			assert.Equal(t, tc.expBody, comment)
 		})
 	}
 }
 
 func TestServer_CommentUpdate(t *testing.T) {
-	s := NewTestServer()
+	server := &Server{router: mux.NewRouter()}
+	server.configureRouter()
 
 	testcases := []struct {
 		name    string
-		id      string
+		mock    func(*gomock.Controller, *mock_service.MockService, model.Comment)
 		comment model.Comment
 		expCode int
 		expBody model.Comment
 	}{
 		{
-			name:    "comment is updated",
-			id:      "1",
-			comment: model.Comment{Text: "Updated comment"},
+			name: "comment is updated",
+			mock: func(c *gomock.Controller, s *mock_service.MockService, comment model.Comment) {
+				ts := mock_service.NewMockCommentService(c)
+				ts.EXPECT().Update(comment).Return(comment, nil)
+				s.EXPECT().Comments().Return(ts)
+			},
+			comment: model.Comment{ID: 1, Text: "Updated comment"},
 			expCode: http.StatusOK,
 			expBody: model.Comment{ID: 1, Text: "Updated comment"},
 		},
@@ -144,46 +190,62 @@ func TestServer_CommentUpdate(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+			s := mock_service.NewMockService(c)
+			tc.mock(c, s, tc.comment)
+			server.service = s
+
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.comment)
-			r, _ := http.NewRequest(http.MethodPut, "/api/v1/comments/comment_id", b)
-			r = mux.SetURLVars(r, map[string]string{"comment_id": tc.id})
+			r, _ := http.NewRequest(http.MethodPut, "/api/v1/comments/1", b)
 
-			s.commentUpdate().ServeHTTP(w, r)
-			var c model.Comment
-			err := json.NewDecoder(w.Body).Decode(&c)
+			server.router.ServeHTTP(w, r)
+			var comment model.Comment
+			err := json.NewDecoder(w.Body).Decode(&comment)
 
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expCode, w.Code)
-			assert.Equal(t, tc.expBody.ID, c.ID)
-			assert.Equal(t, tc.expBody.Text, c.Text)
+			assert.Equal(t, tc.expBody, comment)
 		})
 	}
 }
 
 func TestServer_CommentDelete(t *testing.T) {
-	s := NewTestServer()
+	server := &Server{router: mux.NewRouter()}
+	server.configureRouter()
 
 	testcases := []struct {
 		name    string
-		id      string
+		mock    func(*gomock.Controller, *mock_service.MockService, model.Comment)
+		comment model.Comment
 		expCode int
 	}{
 		{
-			name:    "comment is deleted",
-			id:      "1",
+			name: "comment is deleted",
+			mock: func(c *gomock.Controller, s *mock_service.MockService, comment model.Comment) {
+				ts := mock_service.NewMockCommentService(c)
+				ts.EXPECT().DeleteByID(comment.ID).Return(nil)
+				s.EXPECT().Comments().Return(ts)
+			},
+			comment: model.Comment{ID: 1, Text: "Comment 1"},
 			expCode: http.StatusNoContent,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodDelete, "/api/v1/comments/comment_id", nil)
-			r = mux.SetURLVars(r, map[string]string{"comment_id": tc.id})
+			c := gomock.NewController(t)
+			defer c.Finish()
+			s := mock_service.NewMockService(c)
+			tc.mock(c, s, tc.comment)
+			server.service = s
 
-			s.commentDelete().ServeHTTP(w, r)
+			w := httptest.NewRecorder()
+			r, _ := http.NewRequest(http.MethodDelete, "/api/v1/comments/1", nil)
+
+			server.router.ServeHTTP(w, r)
 
 			assert.Equal(t, tc.expCode, w.Code)
 		})

@@ -7,36 +7,54 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/imarrche/tasker/internal/model"
+	mock_service "github.com/imarrche/tasker/internal/service/mocks"
 )
 
 func TestServer_ProjectList(t *testing.T) {
-	s := NewTestServer()
+	server := &Server{router: mux.NewRouter()}
+	server.configureRouter()
 
 	testcases := []struct {
-		name    string
-		expCode int
-		expBody []model.Project
+		name     string
+		mock     func(*gomock.Controller, *mock_service.MockService, []model.Project)
+		expCode  int
+		projects []model.Project
+		expBody  []model.Project
 	}{
 		{
-			name:    "project list is retrieved",
+			name: "project list is retrieved",
+			mock: func(c *gomock.Controller, s *mock_service.MockService, projects []model.Project) {
+				ps := mock_service.NewMockProjectService(c)
+				ps.EXPECT().GetAll().Return(projects, nil)
+				s.EXPECT().Projects().Return(ps)
+			},
 			expCode: http.StatusOK,
+			projects: []model.Project{
+				{ID: 1, Name: "Project 1"}, {ID: 2, Name: "Project 2"},
+			},
 			expBody: []model.Project{
-				{ID: 1, Name: "Project 1"},
-				{ID: 2, Name: "Project 2"},
+				{ID: 1, Name: "Project 1"}, {ID: 2, Name: "Project 2"},
 			},
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+			s := mock_service.NewMockService(c)
+			tc.mock(c, s, tc.projects)
+			server.service = s
+
 			w := httptest.NewRecorder()
 			r, _ := http.NewRequest(http.MethodGet, "/api/v1/projects", nil)
 
-			s.projectList().ServeHTTP(w, r)
+			server.router.ServeHTTP(w, r)
 			var ps []model.Project
 			err := json.NewDecoder(w.Body).Decode(&ps)
 
@@ -48,30 +66,45 @@ func TestServer_ProjectList(t *testing.T) {
 }
 
 func TestServer_ProjectCreate(t *testing.T) {
-	s := NewTestServer()
+	server := &Server{router: mux.NewRouter()}
+	server.configureRouter()
 
 	testcases := []struct {
 		name    string
+		mock    func(*gomock.Controller, *mock_service.MockService, model.Project)
 		project model.Project
 		expCode int
 		expBody model.Project
 	}{
 		{
-			name:    "project is created",
-			project: model.Project{Name: "Project 3", Description: "Project description."},
+			name: "project is created",
+			mock: func(c *gomock.Controller, s *mock_service.MockService, p model.Project) {
+				createdProject := p
+				createdProject.ID = 1
+				ps := mock_service.NewMockProjectService(c)
+				ps.EXPECT().Create(p).Return(createdProject, nil)
+				s.EXPECT().Projects().Return(ps)
+			},
+			project: model.Project{Name: "Project 1", Description: "Project description."},
 			expCode: http.StatusCreated,
-			expBody: model.Project{ID: 3, Name: "Project 3", Description: "Project description."},
+			expBody: model.Project{ID: 1, Name: "Project 1", Description: "Project description."},
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+			s := mock_service.NewMockService(c)
+			tc.mock(c, s, tc.project)
+			server.service = s
+
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.project)
 			r, _ := http.NewRequest(http.MethodPost, "/api/v1/projects", b)
 
-			s.projectCreate().ServeHTTP(w, r)
+			server.router.ServeHTTP(w, r)
 			var p model.Project
 			err := json.NewDecoder(w.Body).Decode(&p)
 
@@ -83,17 +116,24 @@ func TestServer_ProjectCreate(t *testing.T) {
 }
 
 func TestServer_ProjectDetail(t *testing.T) {
-	s := NewTestServer()
+	server := &Server{router: mux.NewRouter()}
+	server.configureRouter()
 
 	testcases := []struct {
 		name    string
-		id      string
+		mock    func(*gomock.Controller, *mock_service.MockService, model.Project)
+		project model.Project
 		expCode int
 		expBody model.Project
 	}{
 		{
-			name:    "project is retrieved",
-			id:      "1",
+			name: "project is retrieved",
+			mock: func(c *gomock.Controller, s *mock_service.MockService, p model.Project) {
+				ps := mock_service.NewMockProjectService(c)
+				ps.EXPECT().GetByID(p.ID).Return(p, nil)
+				s.EXPECT().Projects().Return(ps)
+			},
+			project: model.Project{ID: 1, Name: "Project 1"},
 			expCode: http.StatusOK,
 			expBody: model.Project{ID: 1, Name: "Project 1"},
 		},
@@ -101,11 +141,16 @@ func TestServer_ProjectDetail(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodGet, "/api/v1/projects/project_id", nil)
-			r = mux.SetURLVars(r, map[string]string{"project_id": tc.id})
+			c := gomock.NewController(t)
+			defer c.Finish()
+			s := mock_service.NewMockService(c)
+			tc.mock(c, s, tc.project)
+			server.service = s
 
-			s.projectDetail().ServeHTTP(w, r)
+			w := httptest.NewRecorder()
+			r, _ := http.NewRequest(http.MethodGet, "/api/v1/projects/1", nil)
+
+			server.router.ServeHTTP(w, r)
 			var p model.Project
 			err := json.NewDecoder(w.Body).Decode(&p)
 
@@ -117,19 +162,24 @@ func TestServer_ProjectDetail(t *testing.T) {
 }
 
 func TestServer_ProjectUpdate(t *testing.T) {
-	s := NewTestServer()
+	server := &Server{router: mux.NewRouter()}
+	server.configureRouter()
 
 	testcases := []struct {
 		name    string
-		id      string
+		mock    func(*gomock.Controller, *mock_service.MockService, model.Project)
 		project model.Project
 		expCode int
 		expBody model.Project
 	}{
 		{
-			name:    "project is updated",
-			id:      "1",
-			project: model.Project{Name: "Updated project", Description: "Updated description"},
+			name: "project is updated",
+			mock: func(c *gomock.Controller, s *mock_service.MockService, p model.Project) {
+				ps := mock_service.NewMockProjectService(c)
+				ps.EXPECT().Update(p).Return(p, nil)
+				s.EXPECT().Projects().Return(ps)
+			},
+			project: model.Project{ID: 1, Name: "Updated project", Description: "Updated description"},
 			expCode: http.StatusOK,
 			expBody: model.Project{ID: 1, Name: "Updated project", Description: "Updated description"},
 		},
@@ -137,13 +187,18 @@ func TestServer_ProjectUpdate(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+			s := mock_service.NewMockService(c)
+			tc.mock(c, s, tc.project)
+			server.service = s
+
 			w := httptest.NewRecorder()
 			b := &bytes.Buffer{}
 			json.NewEncoder(b).Encode(tc.project)
-			r, _ := http.NewRequest(http.MethodPut, "/api/v1/projects/project_id", b)
-			r = mux.SetURLVars(r, map[string]string{"project_id": tc.id})
+			r, _ := http.NewRequest(http.MethodPut, "/api/v1/projects/1", b)
 
-			s.projectUpdate().ServeHTTP(w, r)
+			server.router.ServeHTTP(w, r)
 			var p model.Project
 			err := json.NewDecoder(w.Body).Decode(&p)
 
@@ -155,27 +210,39 @@ func TestServer_ProjectUpdate(t *testing.T) {
 }
 
 func TestServer_ProjectDelete(t *testing.T) {
-	s := NewTestServer()
+	server := &Server{router: mux.NewRouter()}
+	server.configureRouter()
 
 	testcases := []struct {
 		name    string
-		id      string
+		mock    func(*gomock.Controller, *mock_service.MockService, model.Project)
+		project model.Project
 		expCode int
 	}{
 		{
-			name:    "project is deleted",
-			id:      "1",
+			name: "project is deleted",
+			mock: func(c *gomock.Controller, s *mock_service.MockService, p model.Project) {
+				ps := mock_service.NewMockProjectService(c)
+				ps.EXPECT().DeleteByID(p.ID).Return(nil)
+				s.EXPECT().Projects().Return(ps)
+			},
+			project: model.Project{ID: 1, Name: "Project 1"},
 			expCode: http.StatusNoContent,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			r, _ := http.NewRequest(http.MethodDelete, "/api/v1/projects/project_id", nil)
-			r = mux.SetURLVars(r, map[string]string{"project_id": tc.id})
+			c := gomock.NewController(t)
+			defer c.Finish()
+			s := mock_service.NewMockService(c)
+			tc.mock(c, s, tc.project)
+			server.service = s
 
-			s.projectDelete().ServeHTTP(w, r)
+			w := httptest.NewRecorder()
+			r, _ := http.NewRequest(http.MethodDelete, "/api/v1/projects/1", nil)
+
+			server.router.ServeHTTP(w, r)
 
 			assert.Equal(t, tc.expCode, w.Code)
 		})

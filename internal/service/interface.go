@@ -2,6 +2,8 @@ package service
 
 import "github.com/imarrche/tasker/internal/model"
 
+//go:generate mockgen -source=interface.go -destination=mocks/mock.go
+
 // Service is the interface all services must implement.
 type Service interface {
 	Projects() ProjectService
